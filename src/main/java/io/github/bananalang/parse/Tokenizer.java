@@ -5,6 +5,9 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.bananalang.parse.token.DecimalToken;
+import io.github.bananalang.parse.token.IdentifierToken;
+import io.github.bananalang.parse.token.IntegerToken;
 import io.github.bananalang.parse.token.LiteralToken;
 import io.github.bananalang.parse.token.Token;
 
@@ -68,22 +71,80 @@ public final class Tokenizer {
                     tokens.add(new LiteralToken(String.valueOf(c)));
                     continue;
                 case '+':
+                case '-':
                     if (peek() == '=') {
-                        tokens.add(new LiteralToken("+="));
+                        tokens.add(new LiteralToken(c + "="));
                         advance();
                     } else if (peek() == '+') {
-                        tokens.add(new LiteralToken("++"));
+                        tokens.add(new LiteralToken(new String(new char[] {c, c})));
                         advance();
                     } else {
-                        tokens.add(new LiteralToken("+"));
+                        tokens.add(new LiteralToken(String.valueOf(c)));
                     }
                     continue;
-                default:
-                    throw new SyntaxException("Unexpected character '" + c + "'", row, column);
+                case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k':
+                case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v':
+                case 'w': case 'x': case 'y': case 'z': case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G':
+                case 'H': case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+                case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z': case '_':
+                    tokens.add(identifier(c));
+                    continue;
+                case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+                    tokens.add(number(c));
+                    continue;
             }
+            throw new SyntaxException("Unexpected character '" + c + "'", row, column);
         }
-        System.out.println(row);
-        System.out.println(column);
+    }
+
+    private Token identifier(char c) {
+        StringBuilder ident = new StringBuilder().append(c);
+        while (hasNext() && CharData.isValidIdentifierStart(c = input.charAt(i))) {
+            ident.append(c);
+            advance();
+        }
+        return IdentifierToken.identifierOrReserved(ident.toString());
+    }
+
+    private Token number(char c) {
+        StringBuilder result = new StringBuilder();
+        boolean isDecimal = false;
+        if (c != '0') {
+            if (!CharData.isDigit(c)) {
+                throw new SyntaxException("Expected number");
+            }
+            do {
+                result.append(c);
+                c = next();
+            } while (c != '\0' && CharData.isDigit(c));
+        } else {
+            result.append('0');
+            c = next();
+        }
+        if (c == '.') {
+            isDecimal = true;
+            do {
+                result.append(c);
+                c = next();
+            } while (c != '\0' && CharData.isDigit(c));
+        }
+        if (c == 'e' || c == 'E') {
+            isDecimal = true;
+            result.append(c);
+            c = nextOrError("decimal literal");
+            if (c != '-' && c != '+' && !CharData.isDigit(c)) {
+                throw new SyntaxException("Exponential notation missing exponent");
+            }
+            do {
+                result.append(c);
+                c = next();
+            } while (c != '\0' && CharData.isDigit(c));
+        }
+        if (c != '\0') i--;
+        if (isDecimal) {
+            return new DecimalToken(result.toString());
+        }
+        return new IntegerToken(result.toString());
     }
 
     private boolean hasNext() {
@@ -100,6 +161,18 @@ public final class Tokenizer {
 
     private char peek() {
         return safeCharAt(i);
+    }
+
+    private char nextOrError() {
+        return nextOrError(null);
+    }
+
+    private char nextOrError(String inWhat) {
+        char c = next();
+        if (c == '\0') {
+            throw new SyntaxException(inWhat == null ? "EOF" : ("EOF in " + inWhat));
+        }
+        return c;
     }
 
     private char next() {
