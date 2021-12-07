@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import io.github.bananalang.util.ToStringBuilder;
-
 public final class ReservedToken extends Token {
     public static final long serialVersionUID = -7739649703677026647L;
 
@@ -30,9 +28,9 @@ public final class ReservedToken extends Token {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                   .add("word", word)
-                   .toString();
+        return string()
+               .add("word", word)
+               .toString();
     }
 
     public static boolean matchReservedWord(Token tok, String word) {

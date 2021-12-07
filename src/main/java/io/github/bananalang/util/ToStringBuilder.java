@@ -24,6 +24,18 @@ public final class ToStringBuilder {
         return this;
     }
 
+    public ToStringBuilder addIf(boolean add, String name, Object o) {
+        return add ? this.add(name, o) : this;
+    }
+
+    public ToStringBuilder addIf(boolean add, String name, char c) {
+        return add ? this.add(name, c) : this;
+    }
+
+    public ToStringBuilder addIf(boolean add, String name, String s) {
+        return add ? this.add(name, s) : this;
+    }
+
     public String toString() {
         String result = builder.append("}").toString();
         builder.setLength(builder.length() - 1);

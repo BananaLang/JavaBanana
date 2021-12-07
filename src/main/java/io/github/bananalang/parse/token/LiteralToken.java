@@ -1,7 +1,5 @@
 package io.github.bananalang.parse.token;
 
-import io.github.bananalang.util.ToStringBuilder;
-
 public final class LiteralToken extends Token {
     public static final long serialVersionUID = 7013960656416789816L;
 
@@ -18,9 +16,9 @@ public final class LiteralToken extends Token {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                   .add("literal", literal)
-                   .toString();
+        return string()
+               .add("literal", literal)
+               .toString();
     }
 
     public static boolean matchLiteral(Token tok, String check) {

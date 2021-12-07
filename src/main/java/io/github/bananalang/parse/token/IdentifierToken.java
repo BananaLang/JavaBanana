@@ -1,7 +1,5 @@
 package io.github.bananalang.parse.token;
 
-import io.github.bananalang.util.ToStringBuilder;
-
 public final class IdentifierToken extends Token {
     public static final long serialVersionUID = -6522248973930551971L;
 
@@ -18,9 +16,9 @@ public final class IdentifierToken extends Token {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                   .add("identifier", identifier)
-                   .toString();
+        return string()
+               .add("identifier", identifier)
+               .toString();
     }
 
     public static Token identifierOrReserved(String identifier, int row, int column) {
