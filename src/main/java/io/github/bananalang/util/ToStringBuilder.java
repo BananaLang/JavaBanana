@@ -14,6 +14,16 @@ public final class ToStringBuilder {
         return this;
     }
 
+    public ToStringBuilder add(String name, char c) {
+        builder.append(elements++ > 0 ? ", " : "{").append(name).append('=').append('\'').append(c).append('\'');
+        return this;
+    }
+
+    public ToStringBuilder add(String name, String s) {
+        builder.append(elements++ > 0 ? ", " : "{").append(name).append('=').append('"').append(s).append('"');
+        return this;
+    }
+
     public String toString() {
         String result = builder.append("}").toString();
         builder.setLength(builder.length() - 1);

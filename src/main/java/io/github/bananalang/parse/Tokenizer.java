@@ -9,6 +9,7 @@ import io.github.bananalang.parse.token.DecimalToken;
 import io.github.bananalang.parse.token.IdentifierToken;
 import io.github.bananalang.parse.token.IntegerToken;
 import io.github.bananalang.parse.token.LiteralToken;
+import io.github.bananalang.parse.token.StringToken;
 import io.github.bananalang.parse.token.Token;
 
 public final class Tokenizer {
@@ -75,8 +76,16 @@ public final class Tokenizer {
                     if (peek() == '=') {
                         tokens.add(new LiteralToken(c + "="));
                         advance();
-                    } else if (peek() == '+') {
+                    } else if (peek() == c) {
                         tokens.add(new LiteralToken(new String(new char[] {c, c})));
+                        advance();
+                    } else {
+                        tokens.add(new LiteralToken(String.valueOf(c)));
+                    }
+                    continue;
+                case '!':
+                    if (peek() == '=') {
+                        tokens.add(new LiteralToken(c + "="));
                         advance();
                     } else {
                         tokens.add(new LiteralToken(String.valueOf(c)));
@@ -92,8 +101,11 @@ public final class Tokenizer {
                 case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
                     tokens.add(number(c));
                     continue;
+                case '"':
+                    tokens.add(string());
+                    continue;
             }
-            throw new SyntaxException("Unexpected character '" + c + "'", row, column);
+            error("Unexpected character '" + c + "'");
         }
     }
 
@@ -111,7 +123,7 @@ public final class Tokenizer {
         boolean isDecimal = false;
         if (c != '0') {
             if (!CharData.isDigit(c)) {
-                throw new SyntaxException("Expected number");
+                error("Expected number");
             }
             do {
                 result.append(c);
@@ -133,7 +145,7 @@ public final class Tokenizer {
             result.append(c);
             c = nextOrError("decimal literal");
             if (c != '-' && c != '+' && !CharData.isDigit(c)) {
-                throw new SyntaxException("Exponential notation missing exponent");
+                error("Exponential notation missing exponent");
             }
             do {
                 result.append(c);
@@ -145,6 +157,40 @@ public final class Tokenizer {
             return new DecimalToken(result.toString());
         }
         return new IntegerToken(result.toString());
+    }
+
+    private StringToken string() {
+        StringBuilder result = new StringBuilder();
+        char c;
+        while ((c = nextOrError("string literal")) != '"') {
+            if (c == '\\') {
+                char control = nextOrError("string escape");
+                if (control == 'u') {
+                    char[] uni = new char[4];
+                    for (int i = 0; i < 4; i++) {
+                        uni[i] = nextOrError("unicode escape");
+                    }
+                    result.append((char)Integer.parseUnsignedInt(new String(uni), 16));
+                } else {
+                    Character escape = CharData.CONTROL_CODES.get(control);
+                    if (escape == null) {
+                        error("Unkown string escape '" + escape + "'");
+                    }
+                    result.append(escape);
+                }
+                continue;
+            }
+            result.append(c);
+        }
+        return new StringToken(result.toString());
+    }
+
+    private void error() {
+        throw new SyntaxException(row, column);
+    }
+
+    private void error(String message) {
+        throw new SyntaxException(message, row, column);
     }
 
     private boolean hasNext() {
@@ -170,7 +216,7 @@ public final class Tokenizer {
     private char nextOrError(String inWhat) {
         char c = next();
         if (c == '\0') {
-            throw new SyntaxException(inWhat == null ? "EOF" : ("EOF in " + inWhat));
+            error(inWhat == null ? "EOF" : ("EOF in " + inWhat));
         }
         return c;
     }
