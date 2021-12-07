@@ -6,6 +6,6 @@ import io.github.bananalang.parse.Tokenizer;
 
 public class TokenizerTest {
     public static void main(String[] args) throws IOException {
-        System.out.println(new Tokenizer("print(\"Hello, world!\");").tokenize());
+        System.out.println(new Tokenizer("]").tokenize());
     }
 }
