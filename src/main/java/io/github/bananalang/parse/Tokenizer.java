@@ -61,9 +61,9 @@ public final class Tokenizer {
                         row++;
                         column = 1;
                     } else if (advanceIfEqual('=')) {
-                        tokens.add(new LiteralToken("/="));
+                        tokens.add(new LiteralToken("/=", row, column));
                     } else {
-                        tokens.add(new LiteralToken(String.valueOf(c)));
+                        tokens.add(new LiteralToken(String.valueOf(c), row, column));
                     }
                     continue;
                 case '{':
@@ -73,18 +73,18 @@ public final class Tokenizer {
                 case ',':
                 case '.':
                 case ';':
-                    tokens.add(new LiteralToken(String.valueOf(c)));
+                    tokens.add(new LiteralToken(String.valueOf(c), row, column));
                     continue;
                 case '+':
                 case '-':
                 case '&':
                 case '|':
                     if (advanceIfEqual('=')) {
-                        tokens.add(new LiteralToken(new String(new char[] {c, '='})));
+                        tokens.add(new LiteralToken(new String(new char[] {c, '='}), row, column));
                     } else if (advanceIfEqual(c)) {
-                        tokens.add(new LiteralToken(new String(new char[] {c, c})));
+                        tokens.add(new LiteralToken(new String(new char[] {c, c}), row, column));
                     } else {
-                        tokens.add(new LiteralToken(String.valueOf(c)));
+                        tokens.add(new LiteralToken(String.valueOf(c), row, column));
                     }
                     continue;
                 case '*':
@@ -93,23 +93,23 @@ public final class Tokenizer {
                 case '=':
                 case '^':
                     if (advanceIfEqual('=')) {
-                        tokens.add(new LiteralToken(new String(new char[] {c, '='})));
+                        tokens.add(new LiteralToken(new String(new char[] {c, '='}), row, column));
                     } else {
-                        tokens.add(new LiteralToken(String.valueOf(c)));
+                        tokens.add(new LiteralToken(String.valueOf(c), row, column));
                     }
                     continue;
                 case '>':
                 case '<':
                     if (advanceIfEqual('=')) {
-                        tokens.add(new LiteralToken(new String(new char[] {c, '='})));
+                        tokens.add(new LiteralToken(new String(new char[] {c, '='}), row, column));
                     } else if (advanceIfEqual(c)) {
                         if (advanceIfEqual('=')) {
-                            tokens.add(new LiteralToken(new String(new char[] {c, c, '='})));
+                            tokens.add(new LiteralToken(new String(new char[] {c, c, '='}), row, column));
                         } else {
-                            tokens.add(new LiteralToken(new String(new char[] {c, c})));
+                            tokens.add(new LiteralToken(new String(new char[] {c, c}), row, column));
                         }
                     } else {
-                        tokens.add(new LiteralToken(String.valueOf(c)));
+                        tokens.add(new LiteralToken(String.valueOf(c), row, column));
                     }
                     continue;
                 case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k':
@@ -136,7 +136,7 @@ public final class Tokenizer {
             ident.append(c);
             advance();
         }
-        return IdentifierToken.identifierOrReserved(ident.toString());
+        return IdentifierToken.identifierOrReserved(ident.toString(), row, column);
     }
 
     private Token number(char c) {
@@ -175,9 +175,9 @@ public final class Tokenizer {
         }
         if (c != '\0') i--;
         if (isDecimal) {
-            return new DecimalToken(result.toString());
+            return new DecimalToken(result.toString(), row, column);
         }
-        return new IntegerToken(result.toString());
+        return new IntegerToken(result.toString(), row, column);
     }
 
     private StringToken string() {
@@ -203,7 +203,7 @@ public final class Tokenizer {
             }
             result.append(c);
         }
-        return new StringToken(result.toString());
+        return new StringToken(result.toString(), row, column);
     }
 
     private void error() {

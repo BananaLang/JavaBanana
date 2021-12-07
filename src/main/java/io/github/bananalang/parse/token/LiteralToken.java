@@ -7,8 +7,13 @@ public final class LiteralToken extends Token {
 
     public final String literal;
 
-    public LiteralToken(String literal) {
+    public LiteralToken(String literal, int row, int column) {
+        super(row, column);
         this.literal = literal;
+    }
+
+    public LiteralToken(String literal) {
+        this(literal, 0, 0);
     }
 
     @Override

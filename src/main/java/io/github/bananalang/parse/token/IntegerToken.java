@@ -9,8 +9,13 @@ public final class IntegerToken extends Token {
 
     public final BigInteger value;
 
-    public IntegerToken(String value) {
+    public IntegerToken(String value, int row, int column) {
+        super(row, column);
         this.value = new BigInteger(value);
+    }
+
+    public IntegerToken(String value) {
+        this(value, 0, 0);
     }
 
     @Override

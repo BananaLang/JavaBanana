@@ -7,8 +7,13 @@ public final class StringToken extends Token {
 
     public final String value;
 
-    public StringToken(String value) {
+    public StringToken(String value, int row, int column) {
+        super(row, column);
         this.value = value;
+    }
+
+    public StringToken(String value) {
+        this(value, 0, 0);
     }
 
     @Override

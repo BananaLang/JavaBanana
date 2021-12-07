@@ -15,7 +15,7 @@ public class SyntaxException extends RuntimeException {
     }
 
     public SyntaxException(int row, int column) {
-        super(initMessage(null, row, column));
+        super();
         this.row = row;
         this.column = column;
     }
@@ -33,7 +33,7 @@ public class SyntaxException extends RuntimeException {
     }
 
     public SyntaxException(String message, int row, int column) {
-        super(initMessage(message, row, column));
+        super(message);
         this.row = row;
         this.column = column;
     }
@@ -58,7 +58,7 @@ public class SyntaxException extends RuntimeException {
     }
 
     public SyntaxException(String message, Throwable cause, int row, int column) {
-        super(initMessage(message, row, column), cause);
+        super(message, cause);
         this.row = row;
         this.column = column;
     }
@@ -84,6 +84,18 @@ public class SyntaxException extends RuntimeException {
         super(initMessage(null, row, column), cause);
         this.row = row;
         this.column = column;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder(super.toString());
+        if (row != 0 || column != 0) {
+            result.append(" at [");
+            if (row != 0) result.append(row);
+            result.append(',');
+            if (column != 0) result.append(column);
+        }
+        return result.toString();
     }
 
     /**

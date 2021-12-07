@@ -7,8 +7,13 @@ public final class DecimalToken extends Token {
 
     public final double value;
 
-    public DecimalToken(String value) {
+    public DecimalToken(String value, int row, int column) {
+        super(row, column);
         this.value = Double.parseDouble(value);
+    }
+
+    public DecimalToken(String value) {
+        this(value, 0, 0);
     }
 
     @Override

@@ -7,8 +7,13 @@ public final class IdentifierToken extends Token {
 
     public final String identifier;
 
-    public IdentifierToken(String identifier) {
+    public IdentifierToken(String identifier, int row, int column) {
+        super(row, column);
         this.identifier = identifier;
+    }
+
+    public IdentifierToken(String identifier) {
+        this(identifier, 0, 0);
     }
 
     @Override
@@ -18,7 +23,13 @@ public final class IdentifierToken extends Token {
                    .toString();
     }
 
+    public static Token identifierOrReserved(String identifier, int row, int column) {
+        return ReservedToken.RESERVED_WORDS.contains(identifier) ?
+                   new ReservedToken(identifier, row, column) :
+                   new IdentifierToken(identifier, row, column);
+    }
+
     public static Token identifierOrReserved(String identifier) {
-        return ReservedToken.RESERVED_WORDS.contains(identifier) ? new ReservedToken(identifier) : new IdentifierToken(identifier);
+        return identifierOrReserved(identifier, 0, 0);
     }
 }

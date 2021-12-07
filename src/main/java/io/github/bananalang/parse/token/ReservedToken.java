@@ -16,11 +16,16 @@ public final class ReservedToken extends Token {
 
     public final String word;
 
-    public ReservedToken(String word) {
+    public ReservedToken(String word, int row, int column) {
+        super(row, column);
         if (!RESERVED_WORDS.contains(word)) {
             throw new IllegalArgumentException("ReservedToken argument not a reserved word!");
         }
         this.word = word;
+    }
+
+    public ReservedToken(String word) {
+        this(word, 0, 0);
     }
 
     @Override
