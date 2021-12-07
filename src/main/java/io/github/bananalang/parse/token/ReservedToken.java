@@ -9,7 +9,7 @@ public final class ReservedToken extends Token {
     public static final long serialVersionUID = -7739649703677026647L;
 
     public static final Set<String> RESERVED_WORDS = Collections.unmodifiableSet(new HashSet<>(
-        Arrays.asList("if", "else", "for", "while", "break", "continue", "def", "this")
+        Arrays.asList("if", "else", "for", "while", "break", "continue", "def", "this", "var")
     ));
 
     public final String word;

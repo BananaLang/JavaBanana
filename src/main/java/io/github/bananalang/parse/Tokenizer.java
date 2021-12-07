@@ -13,7 +13,7 @@ import io.github.bananalang.parse.token.StringToken;
 import io.github.bananalang.parse.token.Token;
 
 public final class Tokenizer {
-    public final Reader inputReader;
+    private Reader inputReader;
     private String input;
     private List<Token> tokens;
     private int row, column;
@@ -30,18 +30,19 @@ public final class Tokenizer {
     }
 
     public List<Token> tokenize() throws IOException {
-        if (this.tokens == null) {
-            this.tokens = new ArrayList<>();
+        if (tokens == null) {
+            tokens = new ArrayList<>();
             if (input == null) {
                 char[] cs = new char[8192];
                 StringBuilder result = new StringBuilder();
                 while (inputReader.read(cs) > 0) result.append(cs);
                 input = result.toString();
                 inputLength = result.length();
+                inputReader = null;
             }
             tokenize0();
         }
-        return this.tokens;
+        return tokens;
     }
 
     private void tokenize0() throws IOException {
