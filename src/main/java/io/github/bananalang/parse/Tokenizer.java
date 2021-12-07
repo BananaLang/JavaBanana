@@ -60,6 +60,10 @@ public final class Tokenizer {
                         while (hasNext() && input.charAt(i++) != '\n');
                         row++;
                         column = 1;
+                    } else if (advanceIfEqual('=')) {
+                        tokens.add(new LiteralToken("/="));
+                    } else {
+                        tokens.add(new LiteralToken(String.valueOf(c)));
                     }
                     continue;
                 case '{':
@@ -73,20 +77,37 @@ public final class Tokenizer {
                     continue;
                 case '+':
                 case '-':
-                    if (peek() == '=') {
-                        tokens.add(new LiteralToken(c + "="));
-                        advance();
-                    } else if (peek() == c) {
+                case '&':
+                case '|':
+                    if (advanceIfEqual('=')) {
+                        tokens.add(new LiteralToken(new String(new char[] {c, '='})));
+                    } else if (advanceIfEqual(c)) {
                         tokens.add(new LiteralToken(new String(new char[] {c, c})));
-                        advance();
                     } else {
                         tokens.add(new LiteralToken(String.valueOf(c)));
                     }
                     continue;
+                case '*':
+                case '%':
                 case '!':
-                    if (peek() == '=') {
-                        tokens.add(new LiteralToken(c + "="));
-                        advance();
+                case '=':
+                case '^':
+                    if (advanceIfEqual('=')) {
+                        tokens.add(new LiteralToken(new String(new char[] {c, '='})));
+                    } else {
+                        tokens.add(new LiteralToken(String.valueOf(c)));
+                    }
+                    continue;
+                case '>':
+                case '<':
+                    if (advanceIfEqual('=')) {
+                        tokens.add(new LiteralToken(new String(new char[] {c, '='})));
+                    } else if (advanceIfEqual(c)) {
+                        if (advanceIfEqual('=')) {
+                            tokens.add(new LiteralToken(new String(new char[] {c, c, '='})));
+                        } else {
+                            tokens.add(new LiteralToken(new String(new char[] {c, c})));
+                        }
                     } else {
                         tokens.add(new LiteralToken(String.valueOf(c)));
                     }
