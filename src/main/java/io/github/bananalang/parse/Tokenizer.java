@@ -207,6 +207,7 @@ public final class Tokenizer {
         return new StringToken(result.toString(), row, column);
     }
 
+    // Utility methods
     private void error() {
         throw new SyntaxException(row, column);
     }

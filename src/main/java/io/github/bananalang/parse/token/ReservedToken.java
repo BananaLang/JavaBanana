@@ -8,8 +8,19 @@ import java.util.Set;
 public final class ReservedToken extends Token {
     public static final long serialVersionUID = -7739649703677026647L;
 
+    public static final String BREAK    = "break"   .intern(),
+                               CONTINUE = "continue".intern(),
+                               DEF      = "def"     .intern(),
+                               ELSE     = "else"    .intern(),
+                               FOR      = "for"     .intern(),
+                               IF       = "if"      .intern(),
+                               IMPORT   = "import"  .intern(),
+                               THIS     = "this"    .intern(),
+                               VAR      = "var"     .intern(),
+                               WHILE    = "while"   .intern();
+
     public static final Set<String> RESERVED_WORDS = Collections.unmodifiableSet(new HashSet<>(
-        Arrays.asList("if", "else", "for", "while", "break", "continue", "def", "this", "var")
+        Arrays.asList(BREAK, CONTINUE, DEF, ELSE, FOR, IF, IMPORT, THIS, VAR, WHILE)
     ));
 
     public final String word;
