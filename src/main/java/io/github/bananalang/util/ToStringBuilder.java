@@ -14,6 +14,18 @@ public final class ToStringBuilder {
         return this;
     }
 
+    public ToStringBuilder add(String name, Object[] a) {
+        builder.append(elements++ > 0 ? ", " : "{").append(name).append("=[");
+        if (a.length > 0) {
+            builder.append(a[0]);
+            for (int i = 1; i < a.length; i++) {
+                builder.append(',').append(a[i]);
+            }
+        }
+        builder.append(']');
+        return this;
+    }
+
     public ToStringBuilder add(String name, char c) {
         builder.append(elements++ > 0 ? ", " : "{").append(name).append('=').append('\'').append(c).append('\'');
         return this;
@@ -26,6 +38,10 @@ public final class ToStringBuilder {
 
     public ToStringBuilder addIf(boolean add, String name, Object o) {
         return add ? this.add(name, o) : this;
+    }
+
+    public ToStringBuilder addIf(boolean add, String name, Object[] a) {
+        return add ? this.add(name, a) : this;
     }
 
     public ToStringBuilder addIf(boolean add, String name, char c) {

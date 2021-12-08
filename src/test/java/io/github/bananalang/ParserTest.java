@@ -10,7 +10,7 @@ import io.github.bananalang.parse.token.Token;
 
 public class ParserTest {
     public static void main(String[] args) throws IOException {
-        List<Token> tokens = new Tokenizer("import *;").tokenize();
+        List<Token> tokens = new Tokenizer("def Int a, var hello = \"Hello, world!\";").tokenize();
         System.out.println(tokens);
 
         System.out.println();

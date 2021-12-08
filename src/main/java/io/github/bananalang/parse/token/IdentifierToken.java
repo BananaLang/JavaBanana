@@ -23,7 +23,7 @@ public final class IdentifierToken extends Token {
 
     public static Token identifierOrReserved(String identifier, int row, int column) {
         return ReservedToken.RESERVED_WORDS.contains(identifier) ?
-                   new ReservedToken(identifier, row, column) :
+                   new ReservedToken(identifier.intern(), row, column) :
                    new IdentifierToken(identifier, row, column);
     }
 

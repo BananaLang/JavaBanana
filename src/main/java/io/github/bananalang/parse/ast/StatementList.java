@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 public final class StatementList extends ASTNode {
-    public final List<ASTNode> children;
+    public final List<StatementNode> children;
 
     public StatementList(int row, int column) {
         super(row, column);
@@ -16,12 +16,12 @@ public final class StatementList extends ASTNode {
         this(0, 0);
     }
 
-    public StatementList(Collection<ASTNode> children, int row, int column) {
+    public StatementList(Collection<StatementNode> children, int row, int column) {
         super(row, column);
         this.children = new ArrayList<>(children);
     }
 
-    public StatementList(Collection<ASTNode> children) {
+    public StatementList(Collection<StatementNode> children) {
         this(children, 0, 0);
     }
 
@@ -38,6 +38,7 @@ public final class StatementList extends ASTNode {
             output.append('\n');
             for (int i = 0; i < children.size(); i++) {
                 if (i > 0) output.append(",\n");
+                output.append(getIndent(currentIndent + indent));
                 children.get(i).dump(output, currentIndent + indent, indent);
             }
             output.append('\n')
