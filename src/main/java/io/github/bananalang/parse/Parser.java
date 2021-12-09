@@ -16,6 +16,7 @@ import io.github.bananalang.parse.ast.ExpressionNode;
 import io.github.bananalang.parse.ast.ExpressionStatement;
 import io.github.bananalang.parse.ast.FunctionDefinitionStatement;
 import io.github.bananalang.parse.ast.IdentifierExpression;
+import io.github.bananalang.parse.ast.IfOrWhileStatement;
 import io.github.bananalang.parse.ast.ImportStatement;
 import io.github.bananalang.parse.ast.IntegerExpression;
 import io.github.bananalang.parse.ast.StatementList;
@@ -94,6 +95,10 @@ public final class Parser {
     private StatementNode statement(Token tok) {
         if (ReservedToken.matchReservedWord(tok, ReservedToken.DEF)) {
             return variableDeclaration();
+        } else if (ReservedToken.matchReservedWord(tok, ReservedToken.IF)) {
+            return ifOrWhile(tok, false);
+        } else if (ReservedToken.matchReservedWord(tok, ReservedToken.WHILE)) {
+            return ifOrWhile(tok, true);
         } else if (LiteralToken.matchLiteral(tok, "{")) {
             return block(tok);
         } else {
@@ -103,6 +108,27 @@ public final class Parser {
             }
             return result;
         }
+    }
+
+    private IfOrWhileStatement ifOrWhile(Token ifOrWhileToken, boolean isWhile) {
+        Token tok;
+        if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect ( after " + (isWhile ? "while" : "if")), "(")) {
+            error("Expected ( after " + (isWhile ? "while" : "if") + ", not " + tok);
+        }
+        ExpressionNode condition = expression();
+        if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect ) after condition in " + (isWhile ? "while" : "if")), ")")) {
+            error("Expected ) after condition in " + (isWhile ? "while" : "if") + ", not " + tok);
+        }
+        StatementNode body;
+        if (LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect body after condition in " + (isWhile ? "while" : "if")), "{")) {
+            body = block(tok);
+        } else {
+            body = statement(tok);
+            if (body instanceof VariableDeclarationStatement || body instanceof FunctionDefinitionStatement) {
+                error("Cannot have variable declaration or function definition in blockless " + (isWhile ? "while" : "if") + " body");
+            }
+        }
+        return new IfOrWhileStatement(condition, body, isWhile, ifOrWhileToken.row, ifOrWhileToken.column);
     }
 
     private StatementList block(Token tok) {
