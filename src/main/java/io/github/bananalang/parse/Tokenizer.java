@@ -61,6 +61,16 @@ public final class Tokenizer {
                         while (hasNext() && input.charAt(i++) != '\n');
                         row++;
                         column = 1;
+                    } else if (advanceIfEqual('*')) {
+                        while (true) {
+                            char next = nextOrError("multiline comment");
+                            if (next == '*') {
+                                if (peek() == '/') {
+                                    advance();
+                                    break;
+                                }
+                            }
+                        }
                     } else if (advanceIfEqual('=')) {
                         tokens.add(new LiteralToken("/=", row, column));
                     } else {
