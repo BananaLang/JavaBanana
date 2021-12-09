@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public final class StatementList extends ASTNode {
+public final class StatementList extends StatementNode {
     public final List<StatementNode> children;
 
     public StatementList(int row, int column) {
@@ -32,8 +32,7 @@ public final class StatementList extends ASTNode {
 
     @Override
     protected void dump(StringBuilder output, int currentIndent, int indent) {
-        output.append(getIndent(currentIndent))
-              .append("StatementList{children=[");
+        output.append("StatementList{children=[");
         if (children.size() > 0) {
             output.append('\n');
             for (int i = 0; i < children.size(); i++) {

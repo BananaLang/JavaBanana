@@ -14,6 +14,7 @@ import io.github.bananalang.parse.ast.CallExpression;
 import io.github.bananalang.parse.ast.DecimalExpression;
 import io.github.bananalang.parse.ast.ExpressionNode;
 import io.github.bananalang.parse.ast.ExpressionStatement;
+import io.github.bananalang.parse.ast.FunctionDefinitionStatement;
 import io.github.bananalang.parse.ast.IdentifierExpression;
 import io.github.bananalang.parse.ast.ImportStatement;
 import io.github.bananalang.parse.ast.IntegerExpression;
@@ -33,8 +34,12 @@ import io.github.bananalang.parse.token.StringToken;
 import io.github.bananalang.parse.token.Token;
 
 public final class Parser {
+    /**
+     *
+     */
     private static final String IMPORT_STATEMENT = "import statement";
     private static final String VARIABLE_DECLARATION = "variable declaration";
+    private static final String FUNCTION_DEFINITION = "function definition";
     private static final String INFERRED_TYPE_MISSING_ASSIGNMENT = "Cannot create variable with inferred type without assignment";
     private static final String EXPECT_EXPRESSION = "Expect expression";
 
@@ -89,6 +94,8 @@ public final class Parser {
     private StatementNode statement(Token tok) {
         if (ReservedToken.matchReservedWord(tok, ReservedToken.DEF)) {
             return variableDeclaration();
+        } else if (LiteralToken.matchLiteral(tok, "{")) {
+            return block(tok);
         } else {
             ExpressionStatement result = new ExpressionStatement(expression(tok));
             if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expected ; after expression statement"), ";")) {
@@ -96,6 +103,18 @@ public final class Parser {
             }
             return result;
         }
+    }
+
+    private StatementList block(Token tok) {
+        StatementList result = new StatementList(tok.row, tok.column);
+        while (true) {
+            tok = nextOrErrorMessage("Expected statement or } in block");
+            if (LiteralToken.matchLiteral(tok, "}")) {
+                break;
+            }
+            result.children.add(statement(tok));
+        }
+        return result;
     }
 
     private ExpressionNode expression() {
@@ -414,9 +433,10 @@ public final class Parser {
         return new ImportStatement(module.toString(), last, tok.row, tok.column);
     }
 
-    private VariableDeclarationStatement variableDeclaration() {
+    private StatementNode variableDeclaration() {
         Token tok;
         List<VariableDeclaration> declarations = new ArrayList<>();
+        boolean canBeFunction = true;
         while (true) {
             String type;
             tok = nextOrError(VARIABLE_DECLARATION);
@@ -435,6 +455,55 @@ public final class Parser {
             String name = ((IdentifierToken)tok).identifier;
             ExpressionNode value;
             tok = nextOrError(VARIABLE_DECLARATION);
+            if (canBeFunction && LiteralToken.matchLiteral(tok, "(")) {
+                // Is a function declaration
+                while (!LiteralToken.matchLiteral(tok = nextOrError(FUNCTION_DEFINITION), ")")) {
+                    String argType;
+                    if (tok instanceof IdentifierToken) {
+                        argType = ((IdentifierToken)tok).identifier;
+                    } else if (ReservedToken.matchReservedWord(tok, ReservedToken.VAR)) {
+                        argType = null;
+                    } else {
+                        error("Expected type name or var in function definition, not " + tok);
+                        argType = null; // UNREACHABLE
+                    }
+                    tok = nextOrError(VARIABLE_DECLARATION);
+                    if (!(tok instanceof IdentifierToken)) {
+                        error("Expected variable name in variable declaration, not " + tok);
+                    }
+                    String argName = ((IdentifierToken)tok).identifier;
+                    ExpressionNode defaultValue;
+                    tok = nextOrError(VARIABLE_DECLARATION);
+                    if (LiteralToken.matchLiteral(tok, "=")) {
+                        defaultValue = expression();
+                        tok = nextOrErrorMessage("Expected ) or , after variable declaration");
+                    } else {
+                        defaultValue = null;
+                    }
+                    if (argType != null || defaultValue != null) { // Otherwise we error a few lines down
+                        declarations.add(new VariableDeclaration(argType, argName, defaultValue));
+                    }
+                    if (LiteralToken.matchLiteral(tok, ",")) {
+                        if (argType == null && defaultValue == null) {
+                            error(INFERRED_TYPE_MISSING_ASSIGNMENT);
+                        }
+                        continue;
+                    } else if (LiteralToken.matchLiteral(tok, ")")) {
+                        if (argType == null && defaultValue == null) {
+                            error(INFERRED_TYPE_MISSING_ASSIGNMENT);
+                        }
+                        break;
+                    } else {
+                        error("Expected ) or , after variable declaration, not " + tok);
+                    }
+                    declarations.add(new VariableDeclaration(argType, argName)); // reuse existing list
+                }
+                if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect { after function header"), "{")) {
+                    error("Expected { after function header, not " + tok);
+                }
+                StatementList body = block(tok);
+                return new FunctionDefinitionStatement(type, name, declarations.toArray(new VariableDeclaration[0]), body, tok.row, tok.column);
+            }
             if (LiteralToken.matchLiteral(tok, "=")) {
                 value = expression();
                 tok = nextOrErrorMessage("Expected ; or , after variable declaration");
@@ -448,6 +517,7 @@ public final class Parser {
                 if (type == null && value == null) {
                     error(INFERRED_TYPE_MISSING_ASSIGNMENT);
                 }
+                canBeFunction = false;
                 continue;
             } else if (LiteralToken.matchLiteral(tok, ";")) {
                 if (type == null && value == null) {

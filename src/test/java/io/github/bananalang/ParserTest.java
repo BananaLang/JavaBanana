@@ -10,7 +10,7 @@ import io.github.bananalang.parse.token.Token;
 
 public class ParserTest {
     public static void main(String[] args) throws IOException {
-        List<Token> tokens = new Tokenizer("a = b = 5;").tokenize();
+        List<Token> tokens = new Tokenizer("def var myFunc(Int a, var b = 10) { a = 5; }").tokenize();
         System.out.println(tokens);
 
         System.out.println();
