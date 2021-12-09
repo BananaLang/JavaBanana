@@ -36,6 +36,7 @@ public final class Parser {
     private static final String IMPORT_STATEMENT = "import statement";
     private static final String VARIABLE_DECLARATION = "variable declaration";
     private static final String INFERRED_TYPE_MISSING_ASSIGNMENT = "Cannot create variable with inferred type without assignment";
+    private static final String EXPECT_EXPRESSION = "Expect expression";
 
     private Tokenizer tokenizer;
     private List<Token> inputTokens;
@@ -98,7 +99,7 @@ public final class Parser {
     }
 
     private ExpressionNode expression() {
-        return expression(nextOrErrorMessage("Expect expression"));
+        return expression(expectExpression());
     }
 
     private ExpressionNode expression(Token tok) {
@@ -110,7 +111,7 @@ public final class Parser {
         if (assignee instanceof IdentifierExpression) {
             if (LiteralToken.matchLiteral(peek(), "=")) {
                 advance();
-                ExpressionNode value = expression();
+                ExpressionNode value = assignment(expectExpression());
                 return new AssignmentExpression(assignee, value, tok.row, tok.column);
             }
         }
@@ -119,50 +120,50 @@ public final class Parser {
 
     private ExpressionNode logicalOr(Token tok) {
         ExpressionNode left = logicalAnd(tok);
-        if (LiteralToken.matchLiteral(peek(), "||")) {
+        while (LiteralToken.matchLiteral(peek(), "||")) {
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, BinaryOperator.LOGICAL_OR, tok.row, tok.column);
+            ExpressionNode right = logicalAnd(expectExpression());
+            left = new BinaryExpression(left, right, BinaryOperator.LOGICAL_OR, tok.row, tok.column);
         }
         return left;
     }
 
     private ExpressionNode logicalAnd(Token tok) {
         ExpressionNode left = bitwiseOr(tok);
-        if (LiteralToken.matchLiteral(peek(), "&&")) {
+        while (LiteralToken.matchLiteral(peek(), "&&")) {
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, BinaryOperator.LOGICAL_AND, tok.row, tok.column);
+            ExpressionNode right = bitwiseOr(expectExpression());
+            left = new BinaryExpression(left, right, BinaryOperator.LOGICAL_AND, tok.row, tok.column);
         }
         return left;
     }
 
     private ExpressionNode bitwiseOr(Token tok) {
         ExpressionNode left = bitwiseXor(tok);
-        if (LiteralToken.matchLiteral(peek(), "|")) {
+        while (LiteralToken.matchLiteral(peek(), "|")) {
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, BinaryOperator.BITWISE_OR, tok.row, tok.column);
+            ExpressionNode right = bitwiseXor(expectExpression());
+            left = new BinaryExpression(left, right, BinaryOperator.BITWISE_OR, tok.row, tok.column);
         }
         return left;
     }
 
     private ExpressionNode bitwiseXor(Token tok) {
         ExpressionNode left = bitwiseAnd(tok);
-        if (LiteralToken.matchLiteral(peek(), "^")) {
+        while (LiteralToken.matchLiteral(peek(), "^")) {
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, BinaryOperator.BITWISE_XOR, tok.row, tok.column);
+            ExpressionNode right = bitwiseAnd(expectExpression());
+            left = new BinaryExpression(left, right, BinaryOperator.BITWISE_XOR, tok.row, tok.column);
         }
         return left;
     }
 
     private ExpressionNode bitwiseAnd(Token tok) {
         ExpressionNode left = equality(tok);
-        if (LiteralToken.matchLiteral(peek(), "&")) {
+        while (LiteralToken.matchLiteral(peek(), "&")) {
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, BinaryOperator.BITWISE_AND, tok.row, tok.column);
+            ExpressionNode right = equality(expectExpression());
+            left = new BinaryExpression(left, right, BinaryOperator.BITWISE_AND, tok.row, tok.column);
         }
         return left;
     }
@@ -170,7 +171,7 @@ public final class Parser {
     private ExpressionNode equality(Token tok) {
         ExpressionNode left = relational(tok);
         Token rightToken = peek();
-        if (rightToken instanceof LiteralToken) {
+        while (rightToken instanceof LiteralToken) {
             BinaryOperator op;
             switch (((LiteralToken)rightToken).literal) {
                 case "==":
@@ -183,8 +184,9 @@ public final class Parser {
                     return left;
             }
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, op, tok.row, tok.column);
+            ExpressionNode right = relational(expectExpression());
+            left = new BinaryExpression(left, right, op, tok.row, tok.column);
+            rightToken = peek();
         }
         return left;
     }
@@ -192,7 +194,7 @@ public final class Parser {
     private ExpressionNode relational(Token tok) {
         ExpressionNode left = bitShift(tok);
         Token rightToken = peek();
-        if (rightToken instanceof LiteralToken) {
+        while (rightToken instanceof LiteralToken) {
             BinaryOperator op;
             switch (((LiteralToken)rightToken).literal) {
                 case "<":
@@ -211,8 +213,9 @@ public final class Parser {
                     return left;
             }
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, op, tok.row, tok.column);
+            ExpressionNode right = bitShift(expectExpression());
+            left = new BinaryExpression(left, right, op, tok.row, tok.column);
+            rightToken = peek();
         }
         return left;
     }
@@ -220,7 +223,7 @@ public final class Parser {
     private ExpressionNode bitShift(Token tok) {
         ExpressionNode left = addition(tok);
         Token rightToken = peek();
-        if (rightToken instanceof LiteralToken) {
+        while (rightToken instanceof LiteralToken) {
             BinaryOperator op;
             switch (((LiteralToken)rightToken).literal) {
                 case "<<":
@@ -233,8 +236,9 @@ public final class Parser {
                     return left;
             }
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, op, tok.row, tok.column);
+            ExpressionNode right = addition(expectExpression());
+            left = new BinaryExpression(left, right, op, tok.row, tok.column);
+            rightToken = peek();
         }
         return left;
     }
@@ -242,7 +246,7 @@ public final class Parser {
     private ExpressionNode addition(Token tok) {
         ExpressionNode left = multiplication(tok);
         Token rightToken = peek();
-        if (rightToken instanceof LiteralToken) {
+        while (rightToken instanceof LiteralToken) {
             BinaryOperator op;
             switch (((LiteralToken)rightToken).literal) {
                 case "+":
@@ -255,8 +259,9 @@ public final class Parser {
                     return left;
             }
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, op, tok.row, tok.column);
+            ExpressionNode right = multiplication(expectExpression());
+            left = new BinaryExpression(left, right, op, tok.row, tok.column);
+            rightToken = peek();
         }
         return left;
     }
@@ -264,7 +269,7 @@ public final class Parser {
     private ExpressionNode multiplication(Token tok) {
         ExpressionNode left = unary(tok);
         Token rightToken = peek();
-        if (rightToken instanceof LiteralToken) {
+        while (rightToken instanceof LiteralToken) {
             BinaryOperator op;
             switch (((LiteralToken)rightToken).literal) {
                 case "*":
@@ -280,8 +285,9 @@ public final class Parser {
                     return left;
             }
             advance();
-            ExpressionNode right = expression();
-            return new BinaryExpression(left, right, op, tok.row, tok.column);
+            ExpressionNode right = unary(expectExpression());
+            left = new BinaryExpression(left, right, op, tok.row, tok.column);
+            rightToken = peek();
         }
         return left;
     }
@@ -312,7 +318,7 @@ public final class Parser {
                     op = null;
             }
             if (op != null) {
-                return new UnaryExpression(expression(), op, tok.row, tok.column);
+                return new UnaryExpression(unary(expectExpression()), op, tok.row, tok.column);
             }
         }
         return call(tok);
@@ -492,6 +498,14 @@ public final class Parser {
         Token c = next();
         if (c == null) {
             error(inWhat == null ? "EOF" : ("EOF in " + inWhat));
+        }
+        return c;
+    }
+
+    private Token expectExpression() {
+        Token c = next();
+        if (c == null) {
+            error(EXPECT_EXPRESSION);
         }
         return c;
     }
