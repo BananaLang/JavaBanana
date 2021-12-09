@@ -10,6 +10,7 @@ import io.github.bananalang.parse.ast.AssignmentExpression;
 import io.github.bananalang.parse.ast.BinaryExpression;
 import io.github.bananalang.parse.ast.BinaryExpression.BinaryOperator;
 import io.github.bananalang.parse.ast.BooleanExpression;
+import io.github.bananalang.parse.ast.CallExpression;
 import io.github.bananalang.parse.ast.DecimalExpression;
 import io.github.bananalang.parse.ast.ExpressionNode;
 import io.github.bananalang.parse.ast.ExpressionStatement;
@@ -314,7 +315,31 @@ public final class Parser {
                 return new UnaryExpression(expression(), op, tok.row, tok.column);
             }
         }
-        return primary(tok);
+        return call(tok);
+    }
+
+    private ExpressionNode call(Token tok) {
+        ExpressionNode target = primary(tok);
+        while (LiteralToken.matchLiteral(peek(), "(")) {
+            next();
+            List<ExpressionNode> args = new ArrayList<>();
+            tok = nextOrErrorMessage("Expected ) or argument in argument list");
+            if (!LiteralToken.matchLiteral(tok, ")")) {
+                while (true) {
+                    args.add(expression(tok));
+                    tok = nextOrErrorMessage("Expected ) or , in argument list");
+                    if (LiteralToken.matchLiteral(tok, ")")) {
+                        break;
+                    } else if (LiteralToken.matchLiteral(tok, ",")) {
+                        continue;
+                    } else {
+                        error("Expected ) or , in argument list, not " + tok);
+                    }
+                }
+            }
+            target = new CallExpression(target, args.toArray(new ExpressionNode[0]), target.row, target.column);
+        }
+        return target;
     }
 
     private ExpressionNode primary(Token tok) {
