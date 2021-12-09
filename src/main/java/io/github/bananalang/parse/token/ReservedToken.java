@@ -12,15 +12,17 @@ public final class ReservedToken extends Token {
                                CONTINUE = "continue".intern(),
                                DEF      = "def"     .intern(),
                                ELSE     = "else"    .intern(),
+                               FALSE    = "false"   .intern(),
                                FOR      = "for"     .intern(),
                                IF       = "if"      .intern(),
                                IMPORT   = "import"  .intern(),
                                THIS     = "this"    .intern(),
+                               TRUE     = "true"    .intern(),
                                VAR      = "var"     .intern(),
                                WHILE    = "while"   .intern();
 
     public static final Set<String> RESERVED_WORDS = Collections.unmodifiableSet(new HashSet<>(
-        Arrays.asList(BREAK, CONTINUE, DEF, ELSE, FOR, IF, IMPORT, THIS, VAR, WHILE)
+        Arrays.asList(BREAK, CONTINUE, DEF, ELSE, FALSE, FOR, IF, IMPORT, THIS, TRUE, VAR, WHILE)
     ));
 
     public final String word;

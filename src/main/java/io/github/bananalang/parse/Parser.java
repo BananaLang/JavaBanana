@@ -6,14 +6,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.bananalang.parse.ast.ASTNode;
+import io.github.bananalang.parse.ast.AssignmentExpression;
+import io.github.bananalang.parse.ast.BinaryExpression;
+import io.github.bananalang.parse.ast.BinaryExpression.BinaryOperator;
+import io.github.bananalang.parse.ast.BooleanExpression;
 import io.github.bananalang.parse.ast.DecimalExpression;
 import io.github.bananalang.parse.ast.ExpressionNode;
 import io.github.bananalang.parse.ast.ExpressionStatement;
+import io.github.bananalang.parse.ast.IdentifierExpression;
 import io.github.bananalang.parse.ast.ImportStatement;
 import io.github.bananalang.parse.ast.IntegerExpression;
 import io.github.bananalang.parse.ast.StatementList;
 import io.github.bananalang.parse.ast.StatementNode;
 import io.github.bananalang.parse.ast.StringExpression;
+import io.github.bananalang.parse.ast.UnaryExpression;
+import io.github.bananalang.parse.ast.UnaryExpression.UnaryOperator;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.VariableDeclaration;
 import io.github.bananalang.parse.token.DecimalToken;
@@ -94,12 +101,241 @@ public final class Parser {
     }
 
     private ExpressionNode expression(Token tok) {
+        return assignment(tok);
+    }
+
+    private ExpressionNode assignment(Token tok) {
+        ExpressionNode assignee = logicalOr(tok);
+        if (assignee instanceof IdentifierExpression) {
+            if (LiteralToken.matchLiteral(peek(), "=")) {
+                advance();
+                ExpressionNode value = expression();
+                return new AssignmentExpression(assignee, value, tok.row, tok.column);
+            }
+        }
+        return assignee;
+    }
+
+    private ExpressionNode logicalOr(Token tok) {
+        ExpressionNode left = logicalAnd(tok);
+        if (LiteralToken.matchLiteral(peek(), "||")) {
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, BinaryOperator.LOGICAL_OR, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode logicalAnd(Token tok) {
+        ExpressionNode left = bitwiseOr(tok);
+        if (LiteralToken.matchLiteral(peek(), "&&")) {
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, BinaryOperator.LOGICAL_AND, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode bitwiseOr(Token tok) {
+        ExpressionNode left = bitwiseXor(tok);
+        if (LiteralToken.matchLiteral(peek(), "|")) {
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, BinaryOperator.BITWISE_OR, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode bitwiseXor(Token tok) {
+        ExpressionNode left = bitwiseAnd(tok);
+        if (LiteralToken.matchLiteral(peek(), "^")) {
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, BinaryOperator.BITWISE_XOR, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode bitwiseAnd(Token tok) {
+        ExpressionNode left = equality(tok);
+        if (LiteralToken.matchLiteral(peek(), "&")) {
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, BinaryOperator.BITWISE_AND, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode equality(Token tok) {
+        ExpressionNode left = relational(tok);
+        Token rightToken = peek();
+        if (rightToken instanceof LiteralToken) {
+            BinaryOperator op;
+            switch (((LiteralToken)rightToken).literal) {
+                case "==":
+                    op = BinaryOperator.EQUALS;
+                    break;
+                case "!=":
+                    op = BinaryOperator.NOT_EQUALS;
+                    break;
+                default:
+                    return left;
+            }
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, op, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode relational(Token tok) {
+        ExpressionNode left = bitShift(tok);
+        Token rightToken = peek();
+        if (rightToken instanceof LiteralToken) {
+            BinaryOperator op;
+            switch (((LiteralToken)rightToken).literal) {
+                case "<":
+                    op = BinaryOperator.LESS_THAN;
+                    break;
+                case ">":
+                    op = BinaryOperator.GREATER_THAN;
+                    break;
+                case "<=":
+                    op = BinaryOperator.LESS_THAN_EQUALS;
+                    break;
+                case ">=":
+                    op = BinaryOperator.GREATER_THAN_EQUALS;
+                    break;
+                default:
+                    return left;
+            }
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, op, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode bitShift(Token tok) {
+        ExpressionNode left = addition(tok);
+        Token rightToken = peek();
+        if (rightToken instanceof LiteralToken) {
+            BinaryOperator op;
+            switch (((LiteralToken)rightToken).literal) {
+                case "<<":
+                    op = BinaryOperator.LEFT_SHIFT;
+                    break;
+                case ">>":
+                    op = BinaryOperator.RIGHT_SHIFT;
+                    break;
+                default:
+                    return left;
+            }
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, op, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode addition(Token tok) {
+        ExpressionNode left = multiplication(tok);
+        Token rightToken = peek();
+        if (rightToken instanceof LiteralToken) {
+            BinaryOperator op;
+            switch (((LiteralToken)rightToken).literal) {
+                case "+":
+                    op = BinaryOperator.ADD;
+                    break;
+                case "-":
+                    op = BinaryOperator.SUBTRACT;
+                    break;
+                default:
+                    return left;
+            }
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, op, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode multiplication(Token tok) {
+        ExpressionNode left = unary(tok);
+        Token rightToken = peek();
+        if (rightToken instanceof LiteralToken) {
+            BinaryOperator op;
+            switch (((LiteralToken)rightToken).literal) {
+                case "*":
+                    op = BinaryOperator.MULTIPLY;
+                    break;
+                case "/":
+                    op = BinaryOperator.DIVIDE;
+                    break;
+                case "%":
+                    op = BinaryOperator.MODULUS;
+                    break;
+                default:
+                    return left;
+            }
+            advance();
+            ExpressionNode right = expression();
+            return new BinaryExpression(left, right, op, tok.row, tok.column);
+        }
+        return left;
+    }
+
+    private ExpressionNode unary(Token tok) {
+        if (tok instanceof LiteralToken) {
+            UnaryOperator op;
+            switch (((LiteralToken)tok).literal) {
+                case "++":
+                    op = UnaryOperator.PRE_INCREMENT;
+                    break;
+                case "--":
+                    op = UnaryOperator.PRE_DECREMENT;
+                    break;
+                case "+":
+                    op = UnaryOperator.PLUS;
+                    break;
+                case "-":
+                    op = UnaryOperator.NEGATE;
+                    break;
+                case "!":
+                    op = UnaryOperator.NOT;
+                    break;
+                case "~":
+                    op = UnaryOperator.BITWISE_INVERT;
+                    break;
+                default:
+                    op = null;
+            }
+            if (op != null) {
+                return new UnaryExpression(expression(), op, tok.row, tok.column);
+            }
+        }
+        return primary(tok);
+    }
+
+    private ExpressionNode primary(Token tok) {
         if (tok instanceof IntegerToken) {
             return new IntegerExpression(((IntegerToken)tok).value, tok.row, tok.column);
         } else if (tok instanceof DecimalToken) {
             return new DecimalExpression(((DecimalToken)tok).value, tok.row, tok.column);
         } else if (tok instanceof StringToken) {
             return new StringExpression(((StringToken)tok).value, tok.row, tok.column);
+        } else if (tok instanceof IdentifierToken) {
+            return new IdentifierExpression(((IdentifierToken)tok).identifier, tok.row, tok.column);
+        } else if (ReservedToken.matchReservedWord(tok, ReservedToken.TRUE)) {
+            return new BooleanExpression(true, tok.row, tok.column);
+        } else if (ReservedToken.matchReservedWord(tok, ReservedToken.FALSE)) {
+            return new BooleanExpression(false, tok.row, tok.column);
+        } else if (LiteralToken.matchLiteral(tok, "(")) {
+            ExpressionNode result = expression();
+            if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expected ) after paranthesized expression"), ")")) {
+                error("Expected ) after paranthesized expression, not " + tok);
+            }
+            return result;
         } else {
             error("Unexpected token in expression " + tok);
             return null; // UNREACHABLE
