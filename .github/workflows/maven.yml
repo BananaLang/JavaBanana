@@ -20,10 +20,19 @@ jobs:
           distribution: zulu
       - name: Build with Maven
         run: |
-          mvn clean install -f pom.xml
+          mvn clean deploy -f pom.xml
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
         with:
           name: javabanana-jar-artifact
           path: target/JavaBanana-*.jar
+      - name: Push to Maven repository
+        uses: cpina/github-action-push-to-another-repository@v1.3
+        if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
+        with:
+          source-directory: target/mvn-repo
+          destination-github-username: BananaLang
+          destination-repository-name: mvn-repo
+          user-email: gaming32i64@gmail.com
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN }}
