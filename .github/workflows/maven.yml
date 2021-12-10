@@ -32,7 +32,7 @@ jobs:
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
         with:
           repository: BananaLang/mvn-repo
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.API_TOKEN }}
           path: mvn-repo
       - name: Push to Maven repository
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
