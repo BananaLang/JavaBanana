@@ -10,7 +10,7 @@ import io.github.bananalang.parse.token.Token;
 
 public class ParserTest {
     public static void main(String[] args) throws IOException {
-        List<Token> tokens = new Tokenizer("def /* I am a\n   multiline comment. */ Int a;").tokenize();
+        List<Token> tokens = new Tokenizer("for (def var a : b) {}").tokenize();
         System.out.println(tokens);
 
         System.out.println();

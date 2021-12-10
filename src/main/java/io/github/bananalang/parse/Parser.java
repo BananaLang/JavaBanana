@@ -19,9 +19,11 @@ import io.github.bananalang.parse.ast.IdentifierExpression;
 import io.github.bananalang.parse.ast.IfOrWhileStatement;
 import io.github.bananalang.parse.ast.ImportStatement;
 import io.github.bananalang.parse.ast.IntegerExpression;
+import io.github.bananalang.parse.ast.IterationForStatement;
 import io.github.bananalang.parse.ast.StatementList;
 import io.github.bananalang.parse.ast.StatementNode;
 import io.github.bananalang.parse.ast.StringExpression;
+import io.github.bananalang.parse.ast.ThreePartForStatement;
 import io.github.bananalang.parse.ast.UnaryExpression;
 import io.github.bananalang.parse.ast.UnaryExpression.UnaryOperator;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement;
@@ -35,9 +37,6 @@ import io.github.bananalang.parse.token.StringToken;
 import io.github.bananalang.parse.token.Token;
 
 public final class Parser {
-    /**
-     *
-     */
     private static final String IMPORT_STATEMENT = "import statement";
     private static final String VARIABLE_DECLARATION = "variable declaration";
     private static final String FUNCTION_DEFINITION = "function definition";
@@ -94,11 +93,13 @@ public final class Parser {
 
     private StatementNode statement(Token tok) {
         if (ReservedToken.matchReservedWord(tok, ReservedToken.DEF)) {
-            return variableDeclaration();
+            return variableDeclaration(false);
         } else if (ReservedToken.matchReservedWord(tok, ReservedToken.IF)) {
-            return ifOrWhile(tok, false);
+            return ifOrWhileStatement(tok, false);
         } else if (ReservedToken.matchReservedWord(tok, ReservedToken.WHILE)) {
-            return ifOrWhile(tok, true);
+            return ifOrWhileStatement(tok, true);
+        } else if (ReservedToken.matchReservedWord(tok, ReservedToken.FOR)) {
+            return forStatement(tok);
         } else if (LiteralToken.matchLiteral(tok, "{")) {
             return block(tok);
         } else {
@@ -110,7 +111,106 @@ public final class Parser {
         }
     }
 
-    private IfOrWhileStatement ifOrWhile(Token ifOrWhileToken, boolean isWhile) {
+    private StatementNode forStatement(Token tok) {
+        if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect ( after for"), "(")) {
+            error("Expected ( after for, not " + tok);
+        }
+        tok = nextOrErrorMessage("Expect expression or assignement after ( in for");
+        boolean is3Part;
+        StatementNode initializer;
+        if (LiteralToken.matchLiteral(tok, ";")) {
+            initializer = null;
+            is3Part = true;
+        } else {
+            if (ReservedToken.matchReservedWord(tok, ReservedToken.DEF)) {
+                initializer = variableDeclaration(true);
+                tok = peek();
+                if (LiteralToken.matchLiteral(tok, ";")) {
+                    is3Part = true;
+                } else if (LiteralToken.matchLiteral(tok, ":")) {
+                    if (initializer instanceof FunctionDefinitionStatement) {
+                        error("Variable in for iteration loop cannot be function");
+                    }
+                    if (((VariableDeclarationStatement)initializer).declarations.length > 1) {
+                        error("Iteration for loop cannot have multiple variables");
+                    }
+                    is3Part = false;
+                } else {
+                    error("Expected ; or : after initializer in for loop");
+                    return null; // UNREACHABLE
+                }
+            } else {
+                initializer = new ExpressionStatement(expression(tok));
+                tok = peek();
+                if (LiteralToken.matchLiteral(tok, ";")) {
+                    is3Part = true;
+                } else if (LiteralToken.matchLiteral(tok, ":")) {
+                    if (!(((ExpressionStatement)initializer).expression instanceof IdentifierExpression)) {
+                        error("Variable in iteration for loop cannot be expression");
+                    }
+                    is3Part = false;
+                } else {
+                    error("Expected ; or : after initializer in for loop");
+                    return null; // UNREACHABLE
+                }
+            }
+            advance();
+        }
+        tok = nextOrError("for loop");
+        if (is3Part) {
+            ExpressionNode condition;
+            if (LiteralToken.matchLiteral(tok, ";")) {
+                condition = null;
+                tok = nextOrError("for loop");
+            } else {
+                condition = expression(tok);
+                tok = nextOrError("for loop");
+                if (!LiteralToken.matchLiteral(tok, ";")) {
+                    error("Expected ; after condition in for loop");
+                }
+                tok = nextOrError("for loop");
+            }
+            ExpressionNode increment;
+            if (LiteralToken.matchLiteral(tok, ")")) {
+                increment = null;
+            } else {
+                increment = expression(tok);
+                tok = nextOrError("for loop");
+                if (!LiteralToken.matchLiteral(tok, ")")) {
+                    error("Expected ) after condition in for loop");
+                }
+            }
+            StatementNode body;
+            if (LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect body after for header"), "{")) {
+                body = block(tok);
+            } else {
+                body = statement(tok);
+                if (body instanceof VariableDeclarationStatement || body instanceof FunctionDefinitionStatement) {
+                    error("Cannot have variable declaration or function definition in blockless for body");
+                }
+            }
+            return new ThreePartForStatement(initializer, condition, increment, body, tok.row, tok.column);
+        } else {
+            ExpressionNode iterable;
+            iterable = expression(tok);
+            tok = nextOrError("for loop");
+            if (!LiteralToken.matchLiteral(tok, ")")) {
+                error("Expected ) after iterable in for loop");
+            }
+            StatementNode body;
+            if (LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect body after for header"), "{")) {
+                body = block(tok);
+            } else {
+                body = statement(tok);
+                if (body instanceof VariableDeclarationStatement || body instanceof FunctionDefinitionStatement) {
+                    error("Cannot have variable declaration or function definition in blockless for body");
+                }
+            }
+            return new IterationForStatement(initializer, iterable, body, tok.row, tok.column);
+        }
+    }
+
+    private IfOrWhileStatement ifOrWhileStatement(Token ifOrWhileToken, boolean isWhile) {
         Token tok;
         if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect ( after " + (isWhile ? "while" : "if")), "(")) {
             error("Expected ( after " + (isWhile ? "while" : "if") + ", not " + tok);
@@ -459,7 +559,7 @@ public final class Parser {
         return new ImportStatement(module.toString(), last, tok.row, tok.column);
     }
 
-    private StatementNode variableDeclaration() {
+    private StatementNode variableDeclaration(boolean isInFor) {
         Token tok;
         List<VariableDeclaration> declarations = new ArrayList<>();
         boolean canBeFunction = true;
@@ -536,7 +636,7 @@ public final class Parser {
             } else {
                 value = null;
             }
-            if (type != null || value != null) { // Otherwise we error a few lines down
+            if (isInFor || type != null || value != null) { // Otherwise we error a few lines down
                 declarations.add(new VariableDeclaration(type, name, value));
             }
             if (LiteralToken.matchLiteral(tok, ",")) {
@@ -545,10 +645,11 @@ public final class Parser {
                 }
                 canBeFunction = false;
                 continue;
-            } else if (LiteralToken.matchLiteral(tok, ";")) {
-                if (type == null && value == null) {
+            } else if (LiteralToken.matchLiteral(tok, ";") || (isInFor && LiteralToken.matchLiteral(tok, ":"))) {
+                if (!isInFor && type == null && value == null) {
                     error(INFERRED_TYPE_MISSING_ASSIGNMENT);
                 }
+                if (isInFor) i--;
                 break;
             } else {
                 error("Expected ; or , after variable declaration, not " + tok);

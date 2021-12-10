@@ -22,7 +22,7 @@ public final class VariableDeclarationStatement extends StatementNode {
         }
 
         public VariableDeclaration(String type, String name, ExpressionNode value) {
-            this.type = value != null ? type : Objects.requireNonNull(type, "type and value cannot both be null");
+            this.type = type;
             this.name = Objects.requireNonNull(name);
             this.value = value;
         }
