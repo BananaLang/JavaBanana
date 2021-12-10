@@ -37,3 +37,4 @@ jobs:
           destination-github-username: BananaLang
           destination-repository-name: mvn-repo
           user-email: gaming32i64@gmail.com
+          target-branch: main
