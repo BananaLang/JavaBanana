@@ -40,7 +40,7 @@ jobs:
           \cp -af target/mvn-repo/. mvn-repo
           cd mvn-repo
           git config --local user.email "action@github.com"
-          git config --local user.name "github-actions"
+          git config --local user.name "actions-user"
           git add .
-          git commit -m "Update for https://github.com/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}"
+          git commit -m "Update for https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
           git push
