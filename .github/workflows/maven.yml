@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v2
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
         with:
-          repository: BananaLang/mvn-repo
+          repository: BananaLang/maven
           token: ${{ secrets.API_TOKEN }}
           path: target/mvn-repo
       - name: Build with Maven
