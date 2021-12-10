@@ -27,14 +27,20 @@ jobs:
         with:
           name: javabanana-jar-artifact
           path: target/JavaBanana-*.jar
-      - name: Push to Maven repository
-        uses: cpina/github-action-push-to-another-repository@v1.3
+      - name: Checkout Maven repository
+        uses: actions/checkout@v2
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN }}
         with:
-          source-directory: target/mvn-repo
-          destination-github-username: BananaLang
-          destination-repository-name: mvn-repo
-          user-email: gaming32i64@gmail.com
-          target-branch: main
+          repository: BananaLang/mvn-repo
+          token: ${{ secrets.API_TOKEN }}
+          path: mvn-repo
+      - name: Push to Maven repository
+        if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "github-actions"
+          \cp -af target/mvn-repo/. mvn-repo
+          cd mvn-repo
+          git add .
+          git commit -m "Update for https://github.com/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}"
+          git push
