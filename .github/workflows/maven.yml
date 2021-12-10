@@ -30,9 +30,10 @@ jobs:
       - name: Push to Maven repository
         uses: cpina/github-action-push-to-another-repository@v1.3
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN }}
         with:
           source-directory: target/mvn-repo
           destination-github-username: BananaLang
           destination-repository-name: mvn-repo
           user-email: gaming32i64@gmail.com
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN }}
