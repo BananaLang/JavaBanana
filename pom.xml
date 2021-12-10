@@ -5,11 +5,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.github.bananalang</groupId>
-  <artifactId>JavaBanana</artifactId>
+  <artifactId>JavaBanana-Parse</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>JavaBanana</name>
-  <url>https://github.com/BananaLang/JavaBanana</url>
+  <name>JavaBanana-Parse</name>
+  <url>https://github.com/BananaLang/JavaBanana-Parse</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
