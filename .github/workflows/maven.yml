@@ -18,26 +18,24 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: zulu
-      - name: Build with Maven
-        run: |
-          mvn clean deploy -f pom.xml
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
-        with:
-          name: javabanana-jar-artifact
-          path: target/JavaBanana-*.jar
       - name: Checkout Maven repository
         uses: actions/checkout@v2
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
         with:
           repository: BananaLang/mvn-repo
           token: ${{ secrets.API_TOKEN }}
-          path: mvn-repo
+          path: target/mvn-repo
+      - name: Build with Maven
+        run: mvn deploy
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
+        with:
+          name: javabanana-jar-artifact
+          path: target/JavaBanana-*.jar
       - name: Push to Maven repository
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
         run: |
-          \cp -af target/mvn-repo/. mvn-repo
           cd mvn-repo
           git config --local user.email "action@github.com"
           git config --local user.name "actions-user"
