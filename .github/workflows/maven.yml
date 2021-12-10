@@ -36,7 +36,7 @@ jobs:
       - name: Push to Maven repository
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' }}
         run: |
-          cd mvn-repo
+          cd target/mvn-repo
           git config --local user.email "action@github.com"
           git config --local user.name "actions-user"
           git add .
