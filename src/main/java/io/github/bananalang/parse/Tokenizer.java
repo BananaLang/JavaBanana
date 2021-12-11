@@ -35,9 +35,10 @@ public final class Tokenizer {
             if (input == null) {
                 char[] cs = new char[8192];
                 StringBuilder result = new StringBuilder();
-                while (inputReader.read(cs) > 0) result.append(cs);
+                int n;
+                while ((n = inputReader.read(cs)) > 0) result.append(cs, 0, n);
                 input = result.toString();
-                inputLength = input.length();
+                inputLength = result.length();
                 inputReader = null;
             }
             tokenize0();
