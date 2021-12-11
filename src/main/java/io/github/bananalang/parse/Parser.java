@@ -68,7 +68,7 @@ public final class Parser {
         this.inputTokens = null;
     }
 
-    public ASTNode parse() throws IOException {
+    public StatementList parse() throws IOException {
         if (root == null) {
             if (inputTokens == null) {
                 inputTokens = tokenizer.tokenize();
