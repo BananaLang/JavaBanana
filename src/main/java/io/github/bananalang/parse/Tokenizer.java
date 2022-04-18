@@ -145,7 +145,7 @@ public final class Tokenizer {
 
     private Token identifier(char c) {
         StringBuilder ident = new StringBuilder().append(c);
-        while (hasNext() && CharData.isValidIdentifierStart(c = input.charAt(i))) {
+        while (hasNext() && CharData.isValidIdentifierMid(c = input.charAt(i))) {
             ident.append(c);
             advance();
         }

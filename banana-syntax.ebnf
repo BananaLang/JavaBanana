@@ -1,0 +1,22 @@
+statement           = importStatement | functionDefinition | variableDeclaration | ifStatement | whileStatement | forStatement | block | expressionStatement ;
+importStatement     = "import", identifier, [ { ".", ( identifier | "*" ) } ], ";" ;
+functionDefinition  = "def", ( "var" | identifier ), "(", [ singleVariable, [ { ",", singleVariable } ] ], ")", block ;
+variableDeclaration = "def", singleVariable, [ { ",", singleVariable } ], ";" ;
+ifStatement         = "if", "(", expression, ")", ( block | statement ) ;
+whileStatement      = "while", "(", expression, ")", ( block | statement ) ;
+forStatement        = threePartFor | iterableFor ;
+block               = "{", [ { statement } ], "}" ;
+expressionStatement = expression, ";" ;
+threePartFor        = "for", "(", ( variableDeclaration | ( expression, ";" ) ), expression, ";", expression, ")", ( block | statement ) ;
+iterableFor         = "for", "(", [ "var" ], identifier, ":", expression, ( block | statement ) ;
+singleVariable      = ( "var" | identifier ), [ "=", expression ] ;
+identifier          = ( letter | "_" ), { letter | "_" | digit } ;
+letter              = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+                    | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+                    | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+                    | "V" | "W" | "X" | "Y" | "Z" | "a" | "b"
+                    | "c" | "d" | "e" | "f" | "g" | "h" | "i"
+                    | "j" | "k" | "l" | "m" | "n" | "o" | "p"
+                    | "q" | "r" | "s" | "t" | "u" | "v" | "w"
+                    | "x" | "y" | "z" ;
+digit               = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
