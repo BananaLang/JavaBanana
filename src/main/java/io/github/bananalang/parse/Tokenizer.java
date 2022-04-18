@@ -220,6 +220,7 @@ public final class Tokenizer {
     }
 
     // Utility methods
+    @SuppressWarnings("unused")
     private void error() {
         throw new SyntaxException(row, column);
     }
@@ -244,6 +245,7 @@ public final class Tokenizer {
         return safeCharAt(i);
     }
 
+    @SuppressWarnings("unused")
     private char nextOrError() {
         return nextOrError(null);
     }

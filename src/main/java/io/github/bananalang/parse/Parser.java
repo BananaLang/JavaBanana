@@ -5,7 +5,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.bananalang.parse.ast.ASTNode;
 import io.github.bananalang.parse.ast.AssignmentExpression;
 import io.github.bananalang.parse.ast.BinaryExpression;
 import io.github.bananalang.parse.ast.BinaryExpression.BinaryOperator;
@@ -659,6 +658,7 @@ public final class Parser {
     }
 
     // Utility methods
+    @SuppressWarnings("unused")
     private void unexpectedToken(Token tok) {
         unexpectedToken(tok, null);
     }
@@ -667,6 +667,7 @@ public final class Parser {
         error("Unexpected token " + (where == null ? "" : (where + " ")) + tok);
     }
 
+    @SuppressWarnings("unused")
     private void error() {
         throw new SyntaxException(last().row, last().column);
     }
@@ -687,6 +688,7 @@ public final class Parser {
         return safeTokenAt(i);
     }
 
+    @SuppressWarnings("unused")
     private Token nextOrError() {
         return nextOrError(null);
     }
