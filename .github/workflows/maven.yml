@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v2.1.0
         with:
           java-version: ${{ matrix.java }}
-          distribution: temurin
+          distribution: adopt
       - name: Checkout Maven repository
         uses: actions/checkout@v2
         if: ${{ matrix.java == 8 && matrix.os == 'ubuntu-latest' && github.event_name == 'push' && github.ref_type != 'tag' }}
