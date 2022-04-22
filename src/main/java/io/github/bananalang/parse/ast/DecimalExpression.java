@@ -21,8 +21,6 @@ public final class DecimalExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("value", value)
-               .toString();
+        return Double.toString(value);
     }
 }

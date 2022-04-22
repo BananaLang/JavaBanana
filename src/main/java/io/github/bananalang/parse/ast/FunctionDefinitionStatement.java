@@ -56,12 +56,20 @@ public final class FunctionDefinitionStatement extends StatementNode {
 
     @Override
     public String toString() {
-        return string()
-               .addIf(returnType != null, "returnType", returnType)
-               .addIf(returnType == null, "returnType", (Object)"var")
-               .add("name", name)
-               .add("args", args)
-               .add("body", body)
-               .toString();
+        StringBuilder result = new StringBuilder("def ")
+            .append(returnType == null ? "var" : returnType)
+            .append(' ')
+            .append(name)
+            .append('(');
+        for (int i = 0; i < args.length; i++) {
+            if (i > 0) {
+                result.append(", ");
+            }
+            result.append(args[i]);
+        }
+        return result.append(") {")
+            .append(body)
+            .append('}')
+            .toString();
     }
 }

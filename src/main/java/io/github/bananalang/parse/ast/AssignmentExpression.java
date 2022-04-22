@@ -30,9 +30,6 @@ public final class AssignmentExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("target", target)
-               .add("value", value)
-               .toString();
+        return "(" + target + " = " + value + ')';
     }
 }

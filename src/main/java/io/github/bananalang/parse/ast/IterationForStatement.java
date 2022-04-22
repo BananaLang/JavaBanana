@@ -37,10 +37,12 @@ public final class IterationForStatement extends StatementNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("variable", variable)
-               .add("iterable", iterable)
-               .add("body", body)
-               .toString();
+        return "for ("
+            + variable
+            + " : "
+            + iterable
+            + ") {"
+            + body
+            + '}';
     }
 }

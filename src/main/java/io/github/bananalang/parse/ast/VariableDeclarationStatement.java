@@ -2,8 +2,6 @@ package io.github.bananalang.parse.ast;
 
 import java.util.Objects;
 
-import io.github.bananalang.util.ToStringBuilder;
-
 public final class VariableDeclarationStatement extends StatementNode {
     public static final class VariableDeclaration {
         /** The declared type, as a string, or {@code null} to indicate type inference. */
@@ -29,12 +27,19 @@ public final class VariableDeclarationStatement extends StatementNode {
 
         @Override
         public String toString() {
-            return new ToStringBuilder(this)
-                       .addIf(type != null, "type", type)
-                       .addIf(type == null, "type", (Object)"var")
-                       .add("name", name)
-                       .add("value", value)
-                       .toString();
+            StringBuilder result = new StringBuilder(type == null ? "var" : type)
+                .append(' ')
+                .append(name);
+            if (value != null) {
+                result.append(" = ");
+                String valueStr = value.toString();
+                if (valueStr.startsWith("(") && valueStr.endsWith(")")) {
+                    result.append(valueStr, 1, valueStr.length() - 1);
+                } else {
+                    result.append(valueStr);
+                }
+            }
+            return result.toString();
         }
 
         public void dump(StringBuilder output, int currentIndent, int indent) {
@@ -91,8 +96,13 @@ public final class VariableDeclarationStatement extends StatementNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("declarations", declarations)
-               .toString();
+        StringBuilder result = new StringBuilder("def ");
+        for (int i = 0; i < declarations.length; i++) {
+            if (i > 0) {
+                result.append(", ");
+            }
+            result.append(declarations[i]);
+        }
+        return result.append(';').toString();
     }
 }

@@ -37,10 +37,10 @@ public final class IfOrWhileStatement extends StatementNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("condition", condition)
-               .add("body", body)
-               .add("isWhile", isWhile)
-               .toString();
+        return (isWhile ? "while (" : "if (")
+            + condition
+            + ") {"
+            + body +
+            '}';
     }
 }

@@ -30,9 +30,10 @@ public final class ImportStatement extends StatementNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("module", module)
-               .add("name", name)
-               .toString();
+        return "import "
+            + module.replace('/', '.')
+            + '.'
+            + name
+            + ';';
     }
 }

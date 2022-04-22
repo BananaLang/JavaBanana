@@ -44,9 +44,21 @@ public final class CallExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("target", target)
-               .add("args", args)
-               .toString();
+        StringBuilder result = new StringBuilder()
+            .append('(')
+            .append(target)
+            .append('(');
+        for (int i = 0; i < args.length; i++) {
+            if (i > 0) {
+                result.append(", ");
+            }
+            String argStr = args[i].toString();
+            if (argStr.startsWith("(") && argStr.endsWith(")")) {
+                result.append(argStr, 1, argStr.length() - 1);
+            } else {
+                result.append(argStr);
+            }
+        }
+        return result.append("))").toString();
     }
 }

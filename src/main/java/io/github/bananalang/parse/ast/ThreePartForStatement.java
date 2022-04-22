@@ -54,11 +54,14 @@ public final class ThreePartForStatement extends StatementNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("initializer", initializer)
-               .add("condition", condition)
-               .add("increment", increment)
-               .add("body", body)
-               .toString();
+        return "for ("
+            + initializer
+            + ' '
+            + condition
+            + "; "
+            + increment
+            + ") {"
+            + body +
+            '}';
     }
 }

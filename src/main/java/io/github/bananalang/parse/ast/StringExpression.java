@@ -1,5 +1,7 @@
 package io.github.bananalang.parse.ast;
 
+import io.github.bananalang.parse.token.StringToken;
+
 public final class StringExpression extends ExpressionNode {
     public final String value;
 
@@ -21,8 +23,8 @@ public final class StringExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("value", value)
-               .toString();
+        return "\""
+            + StringToken.escape(value)
+            + '"';
     }
 }

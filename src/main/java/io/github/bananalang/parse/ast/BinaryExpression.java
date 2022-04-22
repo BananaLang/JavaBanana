@@ -2,16 +2,26 @@ package io.github.bananalang.parse.ast;
 
 public final class BinaryExpression extends ExpressionNode {
     public static enum BinaryOperator {
-        LOGICAL_OR,
-        LOGICAL_AND,
-        BITWISE_OR,
-        BITWISE_XOR,
-        BITWISE_AND,
-        EQUALS, NOT_EQUALS,
-        LESS_THAN, GREATER_THAN, LESS_THAN_EQUALS, GREATER_THAN_EQUALS,
-        LEFT_SHIFT, RIGHT_SHIFT,
-        ADD, SUBTRACT,
-        MULTIPLY, DIVIDE, MODULUS
+        LOGICAL_OR("||"),
+        LOGICAL_AND("&&"),
+        BITWISE_OR("|"),
+        BITWISE_XOR("^"),
+        BITWISE_AND("&"),
+        EQUALS("=="), NOT_EQUALS("!="),
+        LESS_THAN("<"), GREATER_THAN(">"), LESS_THAN_EQUALS("<="), GREATER_THAN_EQUALS(">="),
+        LEFT_SHIFT("<<"), RIGHT_SHIFT(">>"),
+        ADD("+"), SUBTRACT("-"),
+        MULTIPLY("*"), DIVIDE("/"), MODULUS("%");
+
+        private final String op;
+
+        private BinaryOperator(String op) {
+            this.op = op;
+        }
+
+        public String toString() {
+            return op;
+        }
     }
 
     public final ExpressionNode left, right;
@@ -49,10 +59,6 @@ public final class BinaryExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("left", left)
-               .add("right", right)
-               .add("type", type)
-               .toString();
+        return "(" + left + " " + type + " " + right + ')';
     }
 }

@@ -21,8 +21,6 @@ public final class IdentifierExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("identifier", identifier)
-               .toString();
+        return identifier;
     }
 }

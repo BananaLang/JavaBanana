@@ -31,9 +31,6 @@ public final class AccessExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("target", target)
-               .add("name", name)
-               .toString();
+        return "(" + target + '.' + name + ')';
     }
 }

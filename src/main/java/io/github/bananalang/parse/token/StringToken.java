@@ -1,5 +1,9 @@
 package io.github.bananalang.parse.token;
 
+import java.util.Map;
+
+import io.github.bananalang.parse.CharData;
+
 public final class StringToken extends Token {
     public static final long serialVersionUID = -2689618039594110841L;
 
@@ -19,5 +23,12 @@ public final class StringToken extends Token {
         return string()
                .add("value", value)
                .toString();
+    }
+
+    public static String escape(String value) {
+        for (Map.Entry<Character, Character> escape : CharData.CONTROL_CODES.entrySet()) {
+            value = value.replace(escape.getValue().toString(), "\\" + escape.getKey());
+        }
+        return value;
     }
 }

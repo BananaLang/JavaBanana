@@ -23,8 +23,6 @@ public final class IntegerExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("value", value)
-               .toString();
+        return value.toString();
     }
 }

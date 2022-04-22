@@ -48,8 +48,20 @@ public final class StatementList extends StatementNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("children", children)
-               .toString();
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < children.size(); i++) {
+            if (i > 0) {
+                result.append('\n');
+            }
+            StatementNode child = children.get(i);
+            if (child instanceof StatementList) {
+                result.append('{');
+            }
+            result.append(child);
+            if (child instanceof StatementList) {
+                result.append('}');
+            }
+        }
+        return result.toString();
     }
 }

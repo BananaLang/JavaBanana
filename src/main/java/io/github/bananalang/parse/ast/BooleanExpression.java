@@ -21,8 +21,6 @@ public final class BooleanExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return string()
-               .add("value", value)
-               .toString();
+        return Boolean.toString(value);
     }
 }

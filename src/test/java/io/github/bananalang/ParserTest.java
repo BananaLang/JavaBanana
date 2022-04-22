@@ -10,12 +10,14 @@ import io.github.bananalang.parse.token.Token;
 
 public class ParserTest {
     public static void main(String[] args) throws IOException {
-        List<Token> tokens = new Tokenizer("a.b.c.d.e.f();").tokenize();
+        List<Token> tokens = new Tokenizer("def String a; println(a = \"Hello world\");").tokenize();
         System.out.println(tokens);
 
         System.out.println();
 
         ASTNode root = new Parser(tokens).parse();
         System.out.println(ASTNode.dump(root));
+        System.out.println();
+        System.out.println(root);
     }
 }
