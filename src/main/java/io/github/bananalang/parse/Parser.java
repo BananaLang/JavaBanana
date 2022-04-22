@@ -483,6 +483,7 @@ public final class Parser {
                         if (LiteralToken.matchLiteral(tok, ")")) {
                             break;
                         } else if (LiteralToken.matchLiteral(tok, ",")) {
+                            tok = nextOrErrorMessage("Expected next argument after , in argument list");
                             continue;
                         } else {
                             error("Expected ) or , in argument list, not " + tok);

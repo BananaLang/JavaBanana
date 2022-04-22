@@ -10,7 +10,12 @@ import io.github.bananalang.parse.token.Token;
 
 public class ParserTest {
     public static void main(String[] args) throws IOException {
-        List<Token> tokens = new Tokenizer("def String a; println(a = \"Hello world\");").tokenize();
+        List<Token> tokens = new Tokenizer(
+            "import java.lang.Class.forName;" +
+            "println(forName(\"java.util.HashMap\").getDeclaredMethod(" +
+                "\"computeIfAbsent\", forName(\"java.lang.Object\"), forName(\"java.util.function.Supplier\")" +
+            "));"
+        ).tokenize();
         System.out.println(tokens);
 
         System.out.println();
