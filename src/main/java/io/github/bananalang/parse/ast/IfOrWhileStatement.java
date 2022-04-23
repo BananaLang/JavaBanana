@@ -39,8 +39,8 @@ public final class IfOrWhileStatement extends StatementNode {
     public String toString() {
         return (isWhile ? "while (" : "if (")
             + condition
-            + ") {"
-            + body +
-            '}';
+            + ") {\n"
+            + body
+            + "\n}";
     }
 }

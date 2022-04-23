@@ -20,6 +20,7 @@ import io.github.bananalang.parse.ast.IfOrWhileStatement;
 import io.github.bananalang.parse.ast.ImportStatement;
 import io.github.bananalang.parse.ast.IntegerExpression;
 import io.github.bananalang.parse.ast.IterationForStatement;
+import io.github.bananalang.parse.ast.ReturnStatement;
 import io.github.bananalang.parse.ast.StatementList;
 import io.github.bananalang.parse.ast.StatementNode;
 import io.github.bananalang.parse.ast.StringExpression;
@@ -100,6 +101,8 @@ public final class Parser {
             return ifOrWhileStatement(tok, true);
         } else if (ReservedToken.matchReservedWord(tok, ReservedToken.FOR)) {
             return forStatement(tok);
+        } else if (ReservedToken.matchReservedWord(tok, ReservedToken.RETURN)) {
+            return returnStatement(tok);
         } else if (LiteralToken.matchLiteral(tok, "{")) {
             return block(tok);
         } else {
@@ -109,6 +112,14 @@ public final class Parser {
             }
             return result;
         }
+    }
+
+    private StatementNode returnStatement(Token tok) {
+        ReturnStatement result = new ReturnStatement(expression());
+        if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expected ; after return statement"), ";")) {
+            error("Expected ; after return statement, not " + tok);
+        }
+        return result;
     }
 
     private StatementNode forStatement(Token tok) {

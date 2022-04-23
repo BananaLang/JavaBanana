@@ -55,11 +55,11 @@ public final class StatementList extends StatementNode {
             }
             StatementNode child = children.get(i);
             if (child instanceof StatementList) {
-                result.append('{');
+                result.append("{\n");
             }
             result.append(child);
             if (child instanceof StatementList) {
-                result.append('}');
+                result.append("\n}");
             }
         }
         return result.toString();

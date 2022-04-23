@@ -11,10 +11,10 @@ import io.github.bananalang.parse.token.Token;
 public class ParserTest {
     public static void main(String[] args) throws IOException {
         List<Token> tokens = new Tokenizer(
-            "import java.lang.Class.forName;" +
-            "println(forName(\"java.util.HashMap\").getDeclaredMethod(" +
-                "\"computeIfAbsent\", forName(\"java.lang.Object\"), forName(\"java.util.function.Supplier\")" +
-            "));"
+            "def var join(String a, String b) {" +
+                "return a.concat(\" \").concat(b);" +
+            "}" +
+            "println(join(\"hello\", \"world\"));"
         ).tokenize();
         System.out.println(tokens);
 

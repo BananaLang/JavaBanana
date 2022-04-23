@@ -60,8 +60,8 @@ public final class ThreePartForStatement extends StatementNode {
             + condition
             + "; "
             + increment
-            + ") {"
-            + body +
-            '}';
+            + ") {\n"
+            + body
+            + "\n}";
     }
 }

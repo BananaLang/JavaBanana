@@ -41,8 +41,8 @@ public final class IterationForStatement extends StatementNode {
             + variable
             + " : "
             + iterable
-            + ") {"
+            + ") {\n"
             + body
-            + '}';
+            + "\n}";
     }
 }

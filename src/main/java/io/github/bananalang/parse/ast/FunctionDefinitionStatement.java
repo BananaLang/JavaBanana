@@ -67,9 +67,9 @@ public final class FunctionDefinitionStatement extends StatementNode {
             }
             result.append(args[i]);
         }
-        return result.append(") {")
+        return result.append(") {\n")
             .append(body)
-            .append('}')
+            .append("\n}")
             .toString();
     }
 }
