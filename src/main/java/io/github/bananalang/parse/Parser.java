@@ -115,6 +115,10 @@ public final class Parser {
     }
 
     private StatementNode returnStatement(Token tok) {
+        if (LiteralToken.matchLiteral(peek(), ";")) {
+            advance();
+            return new ReturnStatement(null, tok.row, tok.column);
+        }
         ReturnStatement result = new ReturnStatement(expression());
         if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expected ; after return statement"), ";")) {
             error("Expected ; after return statement, not " + tok);

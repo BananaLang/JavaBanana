@@ -14,17 +14,23 @@ public final class ReturnStatement extends StatementNode {
 
     @Override
     protected void dump(StringBuilder output, int currentIndent, int indent) {
-        output.append("ReturnStatement{\n")
-              .append(getIndent(currentIndent + indent))
-              .append("value=");
-        value.dump(output, currentIndent + indent, indent);
-        output.append('\n')
-              .append(getIndent(currentIndent))
-              .append('}');
+        output.append("ReturnStatement{");
+        if (value != null) {
+            output.append('\n')
+                  .append(getIndent(currentIndent + indent))
+                  .append("value=");
+            value.dump(output, currentIndent + indent, indent);
+            output.append('\n')
+                  .append(getIndent(currentIndent));
+        }
+        output.append('}');
     }
 
     @Override
     public String toString() {
+        if (value == null) {
+            return "return;";
+        }
         String result = value.toString();
         if (result.startsWith("(") && result.endsWith(")")) {
             result = result.substring(1, result.length() - 1);

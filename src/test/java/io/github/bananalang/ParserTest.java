@@ -12,7 +12,8 @@ public class ParserTest {
     public static void main(String[] args) throws IOException {
         List<Token> tokens = new Tokenizer(
             "def var join(String a, String b) {" +
-                "return a.concat(\" \").concat(b);" +
+                "return;" +
+                // "return a.concat(\" \").concat(b);" +
             "}" +
             "println(join(\"hello\", \"world\"));"
         ).tokenize();
