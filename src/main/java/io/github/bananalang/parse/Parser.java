@@ -340,6 +340,12 @@ public final class Parser {
                 case "!=":
                     op = BinaryOperator.NOT_EQUALS;
                     break;
+                case "===":
+                    op = BinaryOperator.IDENTITY_EQUALS;
+                    break;
+                case "!==":
+                    op = BinaryOperator.IDENTITY_NOT_EQUALS;
+                    break;
                 default:
                     return left;
             }

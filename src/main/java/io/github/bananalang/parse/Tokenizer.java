@@ -106,7 +106,11 @@ public final class Tokenizer {
                 case '=':
                 case '^':
                     if (advanceIfEqual('=')) {
-                        tokens.add(new LiteralToken(new String(new char[] {c, '='}), row, column));
+                        if ((c == '=' || c == '!') && advanceIfEqual('=')) {
+                            tokens.add(new LiteralToken(new String(new char[] {c, '=', '='}), row, column));
+                        } else {
+                            tokens.add(new LiteralToken(new String(new char[] {c, '='}), row, column));
+                        }
                     } else {
                         tokens.add(new LiteralToken(String.valueOf(c), row, column));
                     }
