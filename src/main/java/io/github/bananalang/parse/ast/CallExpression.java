@@ -51,12 +51,7 @@ public final class CallExpression extends ExpressionNode {
             if (i > 0) {
                 result.append(", ");
             }
-            String argStr = args[i].toString();
-            if (argStr.startsWith("(") && argStr.endsWith(")")) {
-                result.append(argStr, 1, argStr.length() - 1);
-            } else {
-                result.append(argStr);
-            }
+            result.append(args[i]);
         }
         return result.append(')').toString();
     }

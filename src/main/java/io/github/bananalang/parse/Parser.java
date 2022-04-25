@@ -683,7 +683,11 @@ public final class Parser {
                         defaultValue = null;
                     }
                     if (argType != null || defaultValue != null) { // Otherwise we error a few lines down
-                        declarations.add(new VariableDeclaration(new TypeReference(argType, nullableArg), argName, defaultValue));
+                        declarations.add(new VariableDeclaration(
+                            argType != null ? new TypeReference(argType, nullableArg) : null,
+                            argName,
+                            defaultValue
+                        ));
                     }
                     if (LiteralToken.matchLiteral(tok, ",")) {
                         if (argType == null && defaultValue == null) {
@@ -698,13 +702,23 @@ public final class Parser {
                     } else {
                         error("Expected ) or , after variable declaration, not " + tok);
                     }
-                    declarations.add(new VariableDeclaration(new TypeReference(argType, nullableArg), argName)); // reuse existing list
+                    declarations.add(new VariableDeclaration(
+                        argType != null ? new TypeReference(argType, nullableArg) : null,
+                        argName
+                    )); // reuse existing list
                 }
                 if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect { after function header"), "{")) {
                     error("Expected { after function header, not " + tok);
                 }
                 StatementList body = block(tok);
-                return new FunctionDefinitionStatement(new TypeReference(type, nullable), name, declarations.toArray(new VariableDeclaration[0]), body, tok.row, tok.column);
+                return new FunctionDefinitionStatement(
+                    type != null ? new TypeReference(type, nullable) : null,
+                    name,
+                    declarations.toArray(new VariableDeclaration[0]),
+                    body,
+                    tok.row,
+                    tok.column
+                );
             }
             if (LiteralToken.matchLiteral(tok, "=")) {
                 value = expression();
@@ -713,7 +727,11 @@ public final class Parser {
                 value = null;
             }
             if (isInFor || type != null || value != null) { // Otherwise we error a few lines down
-                declarations.add(new VariableDeclaration(new TypeReference(type, nullable), name, value));
+                declarations.add(new VariableDeclaration(
+                    type != null ? new TypeReference(type, nullable) : null,
+                    name,
+                    value
+                ));
             }
             if (LiteralToken.matchLiteral(tok, ",")) {
                 if (type == null && value == null) {
