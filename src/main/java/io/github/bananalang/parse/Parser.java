@@ -20,6 +20,7 @@ import io.github.bananalang.parse.ast.IfOrWhileStatement;
 import io.github.bananalang.parse.ast.ImportStatement;
 import io.github.bananalang.parse.ast.IntegerExpression;
 import io.github.bananalang.parse.ast.IterationForStatement;
+import io.github.bananalang.parse.ast.NullExpression;
 import io.github.bananalang.parse.ast.ReturnStatement;
 import io.github.bananalang.parse.ast.StatementList;
 import io.github.bananalang.parse.ast.StatementNode;
@@ -568,6 +569,8 @@ public final class Parser {
             return new BooleanExpression(true, tok.row, tok.column);
         } else if (ReservedToken.matchReservedWord(tok, ReservedToken.FALSE)) {
             return new BooleanExpression(false, tok.row, tok.column);
+        } else if (ReservedToken.matchReservedWord(tok, ReservedToken.NULL)) {
+            return new NullExpression(tok.row, tok.column);
         } else if (LiteralToken.matchLiteral(tok, "(")) {
             ExpressionNode result = expression();
             if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expected ) after paranthesized expression"), ")")) {

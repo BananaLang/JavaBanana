@@ -16,6 +16,7 @@ public final class ReservedToken extends Token {
                                FOR      = "for"     .intern(),
                                IF       = "if"      .intern(),
                                IMPORT   = "import"  .intern(),
+                               NULL     = "null"    .intern(),
                                RETURN   = "return"  .intern(),
                                THIS     = "this"    .intern(),
                                TRUE     = "true"    .intern(),
@@ -23,7 +24,7 @@ public final class ReservedToken extends Token {
                                WHILE    = "while"   .intern();
 
     public static final Set<String> RESERVED_WORDS = Collections.unmodifiableSet(new HashSet<>(
-        Arrays.asList(BREAK, CONTINUE, DEF, ELSE, FALSE, FOR, IF, IMPORT, RETURN, THIS, TRUE, VAR, WHILE)
+        Arrays.asList(BREAK, CONTINUE, DEF, ELSE, FALSE, FOR, IF, IMPORT, NULL, RETURN, THIS, TRUE, VAR, WHILE)
     ));
 
     public final String word;
