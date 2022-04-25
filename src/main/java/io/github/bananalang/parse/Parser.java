@@ -519,7 +519,19 @@ public final class Parser {
                     error("Expected identifier, not " + tok);
                 }
                 IdentifierToken identifierToken = (IdentifierToken)tok;
-                target = new AccessExpression(target, identifierToken.identifier, target.row, target.column);
+                target = new AccessExpression(target, identifierToken.identifier, false, target.row, target.column);
+            } else if (LiteralToken.matchLiteral(peek(), "?")) {
+                advance();
+                if (!LiteralToken.matchLiteral(peek(), ".")) {
+                    error("Expected . after ? for safe navigation");
+                }
+                advance();
+                tok = nextOrErrorMessage("Expected identifier");
+                if (!(tok instanceof IdentifierToken)) {
+                    error("Expected identifier, not " + tok);
+                }
+                IdentifierToken identifierToken = (IdentifierToken)tok;
+                target = new AccessExpression(target, identifierToken.identifier, true, target.row, target.column);
             } else {
                 break;
             }

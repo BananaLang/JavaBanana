@@ -84,6 +84,7 @@ public final class Tokenizer {
                 case ')':
                 case ',':
                 case '.':
+                case '?':
                 case ':':
                 case ';':
                     tokens.add(new LiteralToken(String.valueOf(c), row, column));

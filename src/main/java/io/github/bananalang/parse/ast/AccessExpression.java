@@ -3,15 +3,17 @@ package io.github.bananalang.parse.ast;
 public final class AccessExpression extends ExpressionNode {
     public final ExpressionNode target;
     public final String name;
+    public final boolean safeNavigation;
 
-    public AccessExpression(ExpressionNode target, String name, int row, int column) {
+    public AccessExpression(ExpressionNode target, String name, boolean safeNavigation, int row, int column) {
         super(row, column);
         this.target = target;
         this.name = name;
+        this.safeNavigation = safeNavigation;
     }
 
-    public AccessExpression(ExpressionNode target, String name) {
-        this(target, name, 0, 0);
+    public AccessExpression(ExpressionNode target, String name, boolean safeNavigation) {
+        this(target, name, safeNavigation, 0, 0);
     }
 
     @Override
@@ -24,6 +26,10 @@ public final class AccessExpression extends ExpressionNode {
               .append(getIndent(currentIndent + indent))
               .append("name=")
               .append(name)
+              .append(",\n")
+              .append(getIndent(currentIndent + indent))
+              .append("safeNavigation=")
+              .append(safeNavigation)
               .append('\n')
               .append(getIndent(currentIndent))
               .append('}');
@@ -31,6 +37,6 @@ public final class AccessExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return "(" + target + '.' + name + ')';
+        return "(" + target + (safeNavigation ? "?." : ".") + name + ')';
     }
 }
