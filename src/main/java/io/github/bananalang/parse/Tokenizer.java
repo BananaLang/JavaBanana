@@ -75,7 +75,7 @@ public final class Tokenizer {
                     } else if (advanceIfEqual('=')) {
                         tokens.add(new LiteralToken("/=", row, column));
                     } else {
-                        tokens.add(new LiteralToken(String.valueOf(c), row, column));
+                        tokens.add(new LiteralToken("/", row, column));
                     }
                     continue;
                 case '{':
@@ -84,10 +84,22 @@ public final class Tokenizer {
                 case ')':
                 case ',':
                 case '.':
-                case '?':
                 case ':':
                 case ';':
                     tokens.add(new LiteralToken(String.valueOf(c), row, column));
+                    continue;
+                case '?':
+                    if (advanceIfEqual('.')) {
+                        tokens.add(new LiteralToken("?.", row, column));
+                    } else if (advanceIfEqual('?')) {
+                        if (advanceIfEqual('=')) {
+                            tokens.add(new LiteralToken("??=", row, column));
+                        } else {
+                            tokens.add(new LiteralToken("??", row, column));
+                        }
+                    } else {
+                        tokens.add(new LiteralToken("?", row, column));
+                    }
                     continue;
                 case '+':
                 case '-':

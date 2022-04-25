@@ -493,48 +493,54 @@ public final class Parser {
     private ExpressionNode call(Token tok) {
         ExpressionNode target = primary(tok);
         while (true) {
-            if (LiteralToken.matchLiteral(peek(), "(")) {
-                advance();
-                List<ExpressionNode> args = new ArrayList<>();
-                tok = nextOrErrorMessage("Expected ) or argument in argument list");
-                if (!LiteralToken.matchLiteral(tok, ")")) {
-                    while (true) {
-                        args.add(expression(tok));
-                        tok = nextOrErrorMessage("Expected ) or , in argument list");
-                        if (LiteralToken.matchLiteral(tok, ")")) {
-                            break;
-                        } else if (LiteralToken.matchLiteral(tok, ",")) {
-                            tok = nextOrErrorMessage("Expected next argument after , in argument list");
-                            continue;
-                        } else {
-                            error("Expected ) or , in argument list, not " + tok);
-                        }
-                    }
-                }
-                target = new CallExpression(target, args.toArray(new ExpressionNode[0]), target.row, target.column);
-            } else if (LiteralToken.matchLiteral(peek(), ".")) {
-                advance();
-                tok = nextOrErrorMessage("Expected identifier");
-                if (!(tok instanceof IdentifierToken)) {
-                    error("Expected identifier, not " + tok);
-                }
-                IdentifierToken identifierToken = (IdentifierToken)tok;
-                target = new AccessExpression(target, identifierToken.identifier, false, target.row, target.column);
-            } else if (LiteralToken.matchLiteral(peek(), "?")) {
-                advance();
-                if (!LiteralToken.matchLiteral(peek(), ".")) {
-                    error("Expected . after ? for safe navigation");
-                }
-                advance();
-                tok = nextOrErrorMessage("Expected identifier");
-                if (!(tok instanceof IdentifierToken)) {
-                    error("Expected identifier, not " + tok);
-                }
-                IdentifierToken identifierToken = (IdentifierToken)tok;
-                target = new AccessExpression(target, identifierToken.identifier, true, target.row, target.column);
-            } else {
+            Token rightToken = peek();
+            if (!(rightToken instanceof LiteralToken)) {
                 break;
             }
+            switch (((LiteralToken)rightToken).literal) {
+                case "(": {
+                    advance();
+                    List<ExpressionNode> args = new ArrayList<>();
+                    tok = nextOrErrorMessage("Expected ) or argument in argument list");
+                    if (!LiteralToken.matchLiteral(tok, ")")) {
+                        while (true) {
+                            args.add(expression(tok));
+                            tok = nextOrErrorMessage("Expected ) or , in argument list");
+                            if (LiteralToken.matchLiteral(tok, ")")) {
+                                break;
+                            } else if (LiteralToken.matchLiteral(tok, ",")) {
+                                tok = nextOrErrorMessage("Expected next argument after , in argument list");
+                                continue;
+                            } else {
+                                error("Expected ) or , in argument list, not " + tok);
+                            }
+                        }
+                    }
+                    target = new CallExpression(target, args.toArray(new ExpressionNode[0]), target.row, target.column);
+                    continue;
+                }
+                case ".": {
+                    advance();
+                    tok = nextOrErrorMessage("Expected identifier");
+                    if (!(tok instanceof IdentifierToken)) {
+                        error("Expected identifier, not " + tok);
+                    }
+                    IdentifierToken identifierToken = (IdentifierToken)tok;
+                    target = new AccessExpression(target, identifierToken.identifier, false, target.row, target.column);
+                    continue;
+                }
+                case "?.": {
+                    advance();
+                    tok = nextOrErrorMessage("Expected identifier");
+                    if (!(tok instanceof IdentifierToken)) {
+                        error("Expected identifier, not " + tok);
+                    }
+                    IdentifierToken identifierToken = (IdentifierToken)tok;
+                    target = new AccessExpression(target, identifierToken.identifier, true, target.row, target.column);
+                    continue;
+                }
+            }
+            break;
         }
         return target;
     }

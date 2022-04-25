@@ -37,6 +37,6 @@ public final class AccessExpression extends ExpressionNode {
 
     @Override
     public String toString() {
-        return "(" + target + (safeNavigation ? "?." : ".") + name + ')';
+        return target + (safeNavigation ? "?." : ".") + name;
     }
 }

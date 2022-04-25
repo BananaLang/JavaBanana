@@ -45,7 +45,6 @@ public final class CallExpression extends ExpressionNode {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder()
-            .append('(')
             .append(target)
             .append('(');
         for (int i = 0; i < args.length; i++) {
@@ -59,6 +58,6 @@ public final class CallExpression extends ExpressionNode {
                 result.append(argStr);
             }
         }
-        return result.append("))").toString();
+        return result.append(')').toString();
     }
 }
