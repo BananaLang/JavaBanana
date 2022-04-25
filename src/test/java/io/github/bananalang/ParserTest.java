@@ -11,7 +11,7 @@ import io.github.bananalang.parse.token.Token;
 public class ParserTest {
     public static void main(String[] args) throws IOException {
         List<Token> tokens = new Tokenizer(
-            "a?.b.c();"
+            "a ?? b;"
         ).tokenize();
         System.out.println(tokens);
 

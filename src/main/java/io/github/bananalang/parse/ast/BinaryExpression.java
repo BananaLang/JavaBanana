@@ -7,9 +7,9 @@ public final class BinaryExpression extends ExpressionNode {
         BITWISE_OR("|"),
         BITWISE_XOR("^"),
         BITWISE_AND("&"),
-        EQUALS("=="), NOT_EQUALS("!="),
-        IDENTITY_EQUALS("==="), IDENTITY_NOT_EQUALS("!=="),
+        EQUALS("=="), NOT_EQUALS("!="), IDENTITY_EQUALS("==="), IDENTITY_NOT_EQUALS("!=="),
         LESS_THAN("<"), GREATER_THAN(">"), LESS_THAN_EQUALS("<="), GREATER_THAN_EQUALS(">="),
+        NULL_COALESCE("??"),
         LEFT_SHIFT("<<"), RIGHT_SHIFT(">>"),
         ADD("+"), SUBTRACT("-"),
         MULTIPLY("*"), DIVIDE("/"), MODULUS("%");

@@ -358,7 +358,7 @@ public final class Parser {
     }
 
     private ExpressionNode relational(Token tok) {
-        ExpressionNode left = bitShift(tok);
+        ExpressionNode left = nullCoalesce(tok);
         Token rightToken = peek();
         while (rightToken instanceof LiteralToken) {
             BinaryOperator op;
@@ -379,9 +379,19 @@ public final class Parser {
                     return left;
             }
             advance();
-            ExpressionNode right = bitShift(expectExpression());
+            ExpressionNode right = nullCoalesce(expectExpression());
             left = new BinaryExpression(left, right, op, tok.row, tok.column);
             rightToken = peek();
+        }
+        return left;
+    }
+
+    private ExpressionNode nullCoalesce(Token tok) {
+        ExpressionNode left = bitShift(tok);
+        while (LiteralToken.matchLiteral(peek(), "??")) {
+            advance();
+            ExpressionNode right = bitShift(expectExpression());
+            left = new BinaryExpression(left, right, BinaryOperator.NULL_COALESCE, tok.row, tok.column);
         }
         return left;
     }
