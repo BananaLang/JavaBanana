@@ -31,10 +31,6 @@ public final class ReturnStatement extends StatementNode {
         if (value == null) {
             return "return;";
         }
-        String result = value.toString();
-        if (result.startsWith("(") && result.endsWith(")")) {
-            result = result.substring(1, result.length() - 1);
-        }
-        return "return " + result + ';';
+        return "return " + value + ';';
     }
 }

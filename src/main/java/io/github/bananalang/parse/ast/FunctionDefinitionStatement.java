@@ -1,13 +1,15 @@
 package io.github.bananalang.parse.ast;
 
+import io.github.bananalang.parse.ast.VariableDeclarationStatement.TypeReference;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.VariableDeclaration;
 
 public final class FunctionDefinitionStatement extends StatementNode {
-    public final String returnType, name;
+    public final TypeReference returnType;
+    public final String name;
     public final VariableDeclaration[] args;
     public final StatementList body;
 
-    public FunctionDefinitionStatement(String returnType, String name, VariableDeclaration[] args, StatementList body, int row, int column) {
+    public FunctionDefinitionStatement(TypeReference returnType, String name, VariableDeclaration[] args, StatementList body, int row, int column) {
         super(row, column);
         this.returnType = returnType;
         this.name = name;
@@ -15,7 +17,7 @@ public final class FunctionDefinitionStatement extends StatementNode {
         this.body = body;
     }
 
-    public FunctionDefinitionStatement(String returnType, String name, VariableDeclaration[] args, StatementList body) {
+    public FunctionDefinitionStatement(TypeReference returnType, String name, VariableDeclaration[] args, StatementList body) {
         this(returnType, name, args, body, 0, 0);
     }
 
@@ -27,7 +29,7 @@ public final class FunctionDefinitionStatement extends StatementNode {
         if (returnType == null) {
             output.append("var,\n");
         } else {
-            output.append('"').append(returnType).append("\",\n");
+            output.append(returnType).append(",\n");
         }
         output.append(getIndent(currentIndent + indent))
               .append("name=\"")

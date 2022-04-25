@@ -25,10 +25,6 @@ public final class ExpressionStatement extends StatementNode {
 
     @Override
     public String toString() {
-        String result = expression.toString();
-        if (result.startsWith("(") && result.endsWith(")")) {
-            result = result.substring(1, result.length() - 1);
-        }
-        return result + ';';
+        return expression.toString() + ';';
     }
 }

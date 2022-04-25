@@ -3,15 +3,51 @@ package io.github.bananalang.parse.ast;
 import java.util.Objects;
 
 public final class VariableDeclarationStatement extends StatementNode {
+    public static final class TypeReference {
+        public final String name;
+        public final boolean nullable;
+
+        public TypeReference(String name) {
+            this(name, false);
+        }
+
+        public TypeReference(String name, boolean nullable) {
+            this.name = name;
+            this.nullable = nullable;
+        }
+
+        @Override
+        public String toString() {
+            if (nullable) {
+                return name + '?';
+            }
+            return name;
+        }
+
+        public void dump(StringBuilder output, int currentIndent, int indent) {
+            output.append("VariableDeclaration{\n")
+                  .append(getIndent(currentIndent + indent))
+                  .append("name=")
+                  .append(name)
+                  .append(",\n")
+                  .append(getIndent(currentIndent + indent))
+                  .append("nullable=")
+                  .append(nullable)
+                  .append('\n')
+                  .append(getIndent(currentIndent))
+                  .append('}');
+        }
+    }
+
     public static final class VariableDeclaration {
         /** The declared type, as a string, or {@code null} to indicate type inference. */
-        public final String type;
+        public final TypeReference type;
         /** The variable name. */
         public final String name;
         /** The value expression, or null if not assigned to. */
         public final ExpressionNode value;
 
-        public VariableDeclaration(String type, String name) {
+        public VariableDeclaration(TypeReference type, String name) {
             this(type, name, null);
         }
 
@@ -19,7 +55,7 @@ public final class VariableDeclarationStatement extends StatementNode {
             this(null, name, value);
         }
 
-        public VariableDeclaration(String type, String name, ExpressionNode value) {
+        public VariableDeclaration(TypeReference type, String name, ExpressionNode value) {
             this.type = type;
             this.name = Objects.requireNonNull(name);
             this.value = value;
@@ -27,7 +63,7 @@ public final class VariableDeclarationStatement extends StatementNode {
 
         @Override
         public String toString() {
-            StringBuilder result = new StringBuilder(type == null ? "var" : type)
+            StringBuilder result = new StringBuilder(type == null ? "var" : type.toString())
                 .append(' ')
                 .append(name);
             if (value != null) {
@@ -49,7 +85,7 @@ public final class VariableDeclarationStatement extends StatementNode {
             if (type == null) {
                 output.append("var,\n");
             } else {
-                output.append('"').append(type).append("\",\n");
+                output.append(type).append(",\n");
             }
             output.append(getIndent(currentIndent + indent))
                   .append("name=\"")

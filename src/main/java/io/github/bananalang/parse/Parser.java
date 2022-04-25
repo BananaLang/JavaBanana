@@ -29,6 +29,7 @@ import io.github.bananalang.parse.ast.ThreePartForStatement;
 import io.github.bananalang.parse.ast.UnaryExpression;
 import io.github.bananalang.parse.ast.UnaryExpression.UnaryOperator;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement;
+import io.github.bananalang.parse.ast.VariableDeclarationStatement.TypeReference;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.VariableDeclaration;
 import io.github.bananalang.parse.token.DecimalToken;
 import io.github.bananalang.parse.token.IdentifierToken;
@@ -640,6 +641,11 @@ public final class Parser {
                 break; // UNREACHABLE
             }
             tok = nextOrError(VARIABLE_DECLARATION);
+            boolean nullable = false;
+            if (LiteralToken.matchLiteral(tok, "?")) {
+                nullable = true;
+                tok = nextOrError(VARIABLE_DECLARATION);
+            }
             if (!(tok instanceof IdentifierToken)) {
                 error("Expected variable name in variable declaration, not " + tok);
             }
@@ -659,6 +665,11 @@ public final class Parser {
                         argType = null; // UNREACHABLE
                     }
                     tok = nextOrError(VARIABLE_DECLARATION);
+                    boolean nullableArg = false;
+                    if (LiteralToken.matchLiteral(tok, "?")) {
+                        nullableArg = true;
+                        tok = nextOrError(VARIABLE_DECLARATION);
+                    }
                     if (!(tok instanceof IdentifierToken)) {
                         error("Expected variable name in variable declaration, not " + tok);
                     }
@@ -672,7 +683,7 @@ public final class Parser {
                         defaultValue = null;
                     }
                     if (argType != null || defaultValue != null) { // Otherwise we error a few lines down
-                        declarations.add(new VariableDeclaration(argType, argName, defaultValue));
+                        declarations.add(new VariableDeclaration(new TypeReference(argType, nullableArg), argName, defaultValue));
                     }
                     if (LiteralToken.matchLiteral(tok, ",")) {
                         if (argType == null && defaultValue == null) {
@@ -687,13 +698,13 @@ public final class Parser {
                     } else {
                         error("Expected ) or , after variable declaration, not " + tok);
                     }
-                    declarations.add(new VariableDeclaration(argType, argName)); // reuse existing list
+                    declarations.add(new VariableDeclaration(new TypeReference(argType, nullableArg), argName)); // reuse existing list
                 }
                 if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect { after function header"), "{")) {
                     error("Expected { after function header, not " + tok);
                 }
                 StatementList body = block(tok);
-                return new FunctionDefinitionStatement(type, name, declarations.toArray(new VariableDeclaration[0]), body, tok.row, tok.column);
+                return new FunctionDefinitionStatement(new TypeReference(type, nullable), name, declarations.toArray(new VariableDeclaration[0]), body, tok.row, tok.column);
             }
             if (LiteralToken.matchLiteral(tok, "=")) {
                 value = expression();
@@ -702,7 +713,7 @@ public final class Parser {
                 value = null;
             }
             if (isInFor || type != null || value != null) { // Otherwise we error a few lines down
-                declarations.add(new VariableDeclaration(type, name, value));
+                declarations.add(new VariableDeclaration(new TypeReference(type, nullable), name, value));
             }
             if (LiteralToken.matchLiteral(tok, ",")) {
                 if (type == null && value == null) {
