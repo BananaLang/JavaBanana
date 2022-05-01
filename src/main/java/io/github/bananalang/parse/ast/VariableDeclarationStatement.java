@@ -242,6 +242,13 @@ public final class VariableDeclarationStatement extends StatementNode {
               .append('}');
     }
 
+    public boolean isGlobalVariableDef() {
+        return
+            this.modifiers.contains(Modifier.GLOBAL) ||
+            this.modifiers.contains(Modifier.PUBLIC) ||
+            this.modifiers.contains(Modifier.LAZY);
+    }
+
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("def ");
