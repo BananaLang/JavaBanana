@@ -39,6 +39,51 @@ public final class VariableDeclarationStatement extends StatementNode {
             return name;
         }
 
+        public boolean isIncompatibleWith(Modifier other) {
+            switch (this) {
+                case PUBLIC: switch (other) {
+                    case PUBLIC:
+                    case GLOBAL:
+                    case LAZY:
+                        return true;
+                    case EXTENSION:
+                        return false;
+                }
+                case GLOBAL: switch (other) {
+                    case PUBLIC:
+                    case GLOBAL:
+                    case LAZY:
+                    case EXTENSION:
+                        return true;
+                }
+                case LAZY: switch (other) {
+                    case PUBLIC:
+                    case GLOBAL:
+                    case LAZY:
+                    case EXTENSION:
+                        return true;
+                }
+                case EXTENSION: switch (other) {
+                    case GLOBAL:
+                    case LAZY:
+                    case EXTENSION:
+                        return true;
+                    case PUBLIC:
+                        return false;
+                }
+            }
+            throw new AssertionError();
+        }
+
+        public Modifier incompatibleWith(Set<Modifier> others) {
+            for (Modifier other : others) {
+                if (isIncompatibleWith(other))  {
+                    return other;
+                }
+            }
+            return null;
+        }
+
         public static Modifier fromName(String name) {
             return nameToModifier.get(name);
         }

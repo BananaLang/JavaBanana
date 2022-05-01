@@ -656,9 +656,22 @@ public final class Parser {
             ) {
                 break;
             }
-            if (!modifiers.add(modifier)) {
-                throw new SyntaxException("Duplicate modifier " + modifier, tok.row, tok.column);
+            Modifier incompatibleWith = modifier.incompatibleWith(modifiers);
+            if (incompatibleWith != null) {
+                if (incompatibleWith == modifier) {
+                    // Duplicate modifier!
+                    throw new SyntaxException(
+                        "Duplicate modifier: " + modifier,
+                        tok.row, tok.column
+                    );
+                } else {
+                    throw new SyntaxException(
+                        "Incompatible modifiers: " + modifier + " and " + incompatibleWith,
+                        tok.row, tok.column
+                    );
+                }
             }
+            modifiers.add(modifier);
             advance();
         }
         while (true) {
