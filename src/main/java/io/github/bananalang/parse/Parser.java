@@ -3,7 +3,9 @@ package io.github.bananalang.parse;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import io.github.bananalang.parse.ast.AccessExpression;
 import io.github.bananalang.parse.ast.AssignmentExpression;
@@ -644,7 +646,7 @@ public final class Parser {
         Token tok;
         List<VariableDeclaration> declarations = new ArrayList<>();
         boolean canBeFunction = true;
-        List<Modifier> modifiers = new ArrayList<>();
+        Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
         while (true) {
             tok = peek();
             Modifier modifier;
@@ -654,7 +656,9 @@ public final class Parser {
             ) {
                 break;
             }
-            modifiers.add(modifier);
+            if (!modifiers.add(modifier)) {
+                throw new SyntaxException("Duplicate modifier " + modifier, tok.row, tok.column);
+            }
             advance();
         }
         while (true) {
@@ -740,7 +744,7 @@ public final class Parser {
                 }
                 StatementList body = block(tok);
                 return new FunctionDefinitionStatement(
-                    modifiers.toArray(new Modifier[modifiers.size()]),
+                    modifiers,
                     type != null ? new TypeReference(type, nullable) : null,
                     name,
                     declarations.toArray(new VariableDeclaration[declarations.size()]),
@@ -780,7 +784,7 @@ public final class Parser {
         }
         return new VariableDeclarationStatement(
             declarations.toArray(new VariableDeclaration[declarations.size()]),
-            modifiers.toArray(new Modifier[modifiers.size()]),
+            modifiers,
             tok.row, tok.column
         );
     }

@@ -1,19 +1,22 @@
 package io.github.bananalang.parse.ast;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import io.github.bananalang.parse.SyntaxException;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.Modifier;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.TypeReference;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.VariableDeclaration;
 
 public final class FunctionDefinitionStatement extends StatementNode {
-    public final Modifier[] modifiers;
+    public final Set<Modifier> modifiers;
     public final TypeReference returnType;
     public final String name;
     public final VariableDeclaration[] args;
     public final StatementList body;
 
     public FunctionDefinitionStatement(
-        Modifier[] modifiers,
+        Set<Modifier> modifiers,
         TypeReference returnType,
         String name,
         VariableDeclaration[] args,
@@ -34,7 +37,7 @@ public final class FunctionDefinitionStatement extends StatementNode {
     }
 
     public FunctionDefinitionStatement(
-        Modifier[] modifiers,
+        Set<Modifier> modifiers,
         TypeReference returnType,
         String name,
         VariableDeclaration[] args,
@@ -48,11 +51,13 @@ public final class FunctionDefinitionStatement extends StatementNode {
         output.append("FunctionDefinitionStatement{\n")
               .append(getIndent(currentIndent + indent))
               .append("modifiers=[");
-        for (int i = 0; i < modifiers.length; i++) {
-            if (i > 0) {
+        boolean first = true;
+        for (Iterator<Modifier> modifierIterator = modifiers.iterator(); modifierIterator.hasNext();) {
+            if (first) {
+                first = false;
                 output.append(", ");
             }
-            output.append(modifiers[i]);
+            output.append(modifierIterator.next());
         }
         output.append("],\n")
               .append(getIndent(currentIndent + indent))

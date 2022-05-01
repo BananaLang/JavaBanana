@@ -1,8 +1,10 @@
 package io.github.bananalang.parse.ast;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import io.github.bananalang.parse.SyntaxException;
 
@@ -143,9 +145,13 @@ public final class VariableDeclarationStatement extends StatementNode {
     }
 
     public final VariableDeclaration[] declarations;
-    public final Modifier[] modifiers;
+    public final Set<Modifier> modifiers;
 
-    public VariableDeclarationStatement(VariableDeclaration[] declarations, Modifier[] modifiers, int row, int column) {
+    public VariableDeclarationStatement(
+        VariableDeclaration[] declarations,
+        Set<Modifier> modifiers,
+        int row, int column
+    ) {
         super(row, column);
         this.declarations = declarations;
         this.modifiers = modifiers;
@@ -156,7 +162,7 @@ public final class VariableDeclarationStatement extends StatementNode {
         }
     }
 
-    public VariableDeclarationStatement(VariableDeclaration[] declarations, Modifier[] modifiers) {
+    public VariableDeclarationStatement(VariableDeclaration[] declarations, Set<Modifier> modifiers) {
         this(declarations, modifiers, 0, 0);
     }
 
@@ -165,11 +171,13 @@ public final class VariableDeclarationStatement extends StatementNode {
         output.append("VariableDeclarationStatement{\n")
               .append(getIndent(currentIndent + indent))
               .append("modifiers=[");
-        for (int i = 0; i < modifiers.length; i++) {
-            if (i > 0) {
+        boolean first = true;
+        for (Iterator<Modifier> modifierIterator = modifiers.iterator(); modifierIterator.hasNext();) {
+            if (first) {
+                first = false;
                 output.append(", ");
             }
-            output.append(modifiers[i]);
+            output.append(modifierIterator.next());
         }
         output.append("],\n")
               .append(getIndent(currentIndent + indent))
