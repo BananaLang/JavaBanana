@@ -1,29 +1,60 @@
 package io.github.bananalang.parse.ast;
 
+import io.github.bananalang.parse.SyntaxException;
+import io.github.bananalang.parse.ast.VariableDeclarationStatement.Modifier;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.TypeReference;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.VariableDeclaration;
 
 public final class FunctionDefinitionStatement extends StatementNode {
+    public final Modifier[] modifiers;
     public final TypeReference returnType;
     public final String name;
     public final VariableDeclaration[] args;
     public final StatementList body;
 
-    public FunctionDefinitionStatement(TypeReference returnType, String name, VariableDeclaration[] args, StatementList body, int row, int column) {
+    public FunctionDefinitionStatement(
+        Modifier[] modifiers,
+        TypeReference returnType,
+        String name,
+        VariableDeclaration[] args,
+        StatementList body,
+        int row, int column
+    ) {
         super(row, column);
+        this.modifiers = modifiers;
         this.returnType = returnType;
         this.name = name;
         this.args = args;
         this.body = body;
+        for (Modifier modifier : modifiers) {
+            if (!modifier.allowedFunction) {
+                throw new SyntaxException("Modifier " + modifier + " not allowed on function", row, column);
+            }
+        }
     }
 
-    public FunctionDefinitionStatement(TypeReference returnType, String name, VariableDeclaration[] args, StatementList body) {
-        this(returnType, name, args, body, 0, 0);
+    public FunctionDefinitionStatement(
+        Modifier[] modifiers,
+        TypeReference returnType,
+        String name,
+        VariableDeclaration[] args,
+        StatementList body
+    ) {
+        this(modifiers, returnType, name, args, body, 0, 0);
     }
 
     @Override
     protected void dump(StringBuilder output, int currentIndent, int indent) {
         output.append("FunctionDefinitionStatement{\n")
+              .append(getIndent(currentIndent + indent))
+              .append("modifiers=[");
+        for (int i = 0; i < modifiers.length; i++) {
+            if (i > 0) {
+                output.append(", ");
+            }
+            output.append(modifiers[i]);
+        }
+        output.append("],\n")
               .append(getIndent(currentIndent + indent))
               .append("returnType=");
         if (returnType == null) {
@@ -58,8 +89,11 @@ public final class FunctionDefinitionStatement extends StatementNode {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder("def ")
-            .append(returnType == null ? "var" : returnType)
+        StringBuilder result = new StringBuilder("def ");
+        for (Modifier modifier : modifiers) {
+            result.append(modifier).append(' ');
+        }
+        result.append(returnType == null ? "var" : returnType)
             .append(' ')
             .append(name)
             .append('(');

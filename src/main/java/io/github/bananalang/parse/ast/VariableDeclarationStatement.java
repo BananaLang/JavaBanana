@@ -1,8 +1,47 @@
 package io.github.bananalang.parse.ast;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
+import io.github.bananalang.parse.SyntaxException;
+
 public final class VariableDeclarationStatement extends StatementNode {
+    public static enum Modifier {
+        PUBLIC(true, true, "public"),
+        GLOBAL(true, false, "global"),
+        LAZY(true, false, "lazy"),
+        EXTENSION(false, true, "extension");
+
+        private static Map<String, Modifier> nameToModifier;
+
+        public final boolean allowedVariable, allowedFunction;
+        public final String name;
+
+        private Modifier(boolean allowedVariable, boolean allowedFunction, String name) {
+            this.allowedVariable = allowedVariable;
+            this.allowedFunction = allowedFunction;
+            this.name = name.intern();
+            postInit();
+        }
+
+        private void postInit() {
+            if (nameToModifier == null) {
+                nameToModifier = new HashMap<>();
+            }
+            nameToModifier.put(name, this);
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
+        public static Modifier fromName(String name) {
+            return nameToModifier.get(name);
+        }
+    }
+
     public static final class TypeReference {
         public final String name;
         public final boolean nullable;
@@ -104,35 +143,58 @@ public final class VariableDeclarationStatement extends StatementNode {
     }
 
     public final VariableDeclaration[] declarations;
+    public final Modifier[] modifiers;
 
-    public VariableDeclarationStatement(VariableDeclaration[] declarations, int row, int column) {
+    public VariableDeclarationStatement(VariableDeclaration[] declarations, Modifier[] modifiers, int row, int column) {
         super(row, column);
         this.declarations = declarations;
+        this.modifiers = modifiers;
+        for (Modifier modifier : modifiers) {
+            if (!modifier.allowedVariable) {
+                throw new SyntaxException("Modifier " + modifier + " not allowed on variable", row, column);
+            }
+        }
     }
 
-    public VariableDeclarationStatement(VariableDeclaration[] declarations) {
-        this(declarations, 0, 0);
+    public VariableDeclarationStatement(VariableDeclaration[] declarations, Modifier[] modifiers) {
+        this(declarations, modifiers, 0, 0);
     }
 
     @Override
     protected void dump(StringBuilder output, int currentIndent, int indent) {
-        output.append("VariableDeclarationStatement{declarations=[");
+        output.append("VariableDeclarationStatement{\n")
+              .append(getIndent(currentIndent + indent))
+              .append("modifiers=[");
+        for (int i = 0; i < modifiers.length; i++) {
+            if (i > 0) {
+                output.append(", ");
+            }
+            output.append(modifiers[i]);
+        }
+        output.append("],\n")
+              .append(getIndent(currentIndent + indent))
+              .append("declarations=[");
         if (declarations.length > 0) {
             output.append('\n');
             for (int i = 0; i < declarations.length; i++) {
                 if (i > 0) output.append(",\n");
-                output.append(getIndent(currentIndent + indent));
-                declarations[i].dump(output, currentIndent + indent, indent);
+                output.append(getIndent(currentIndent + indent + indent));
+                declarations[i].dump(output, currentIndent + indent + indent, indent);
             }
             output.append('\n')
-                  .append(getIndent(currentIndent));
+                  .append(getIndent(currentIndent + indent));
         }
-        output.append("]}");
+        output.append("]\n")
+              .append(getIndent(currentIndent))
+              .append('}');
     }
 
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("def ");
+        for (Modifier modifier : modifiers) {
+            result.append(modifier).append(' ');
+        }
         for (int i = 0; i < declarations.length; i++) {
             if (i > 0) {
                 result.append(", ");

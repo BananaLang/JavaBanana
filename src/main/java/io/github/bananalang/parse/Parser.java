@@ -29,6 +29,7 @@ import io.github.bananalang.parse.ast.ThreePartForStatement;
 import io.github.bananalang.parse.ast.UnaryExpression;
 import io.github.bananalang.parse.ast.UnaryExpression.UnaryOperator;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement;
+import io.github.bananalang.parse.ast.VariableDeclarationStatement.Modifier;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.TypeReference;
 import io.github.bananalang.parse.ast.VariableDeclarationStatement.VariableDeclaration;
 import io.github.bananalang.parse.token.DecimalToken;
@@ -643,6 +644,19 @@ public final class Parser {
         Token tok;
         List<VariableDeclaration> declarations = new ArrayList<>();
         boolean canBeFunction = true;
+        List<Modifier> modifiers = new ArrayList<>();
+        while (true) {
+            tok = peek();
+            Modifier modifier;
+            if (
+                !(tok instanceof IdentifierToken) ||
+                (modifier = Modifier.fromName(((IdentifierToken)tok).identifier)) == null
+            ) {
+                break;
+            }
+            modifiers.add(modifier);
+            advance();
+        }
         while (true) {
             String type;
             tok = nextOrError(VARIABLE_DECLARATION);
@@ -726,9 +740,10 @@ public final class Parser {
                 }
                 StatementList body = block(tok);
                 return new FunctionDefinitionStatement(
+                    modifiers.toArray(new Modifier[modifiers.size()]),
                     type != null ? new TypeReference(type, nullable) : null,
                     name,
-                    declarations.toArray(new VariableDeclaration[0]),
+                    declarations.toArray(new VariableDeclaration[declarations.size()]),
                     body,
                     tok.row,
                     tok.column
@@ -763,7 +778,11 @@ public final class Parser {
                 error("Expected ; or , after variable declaration, not " + tok);
             }
         }
-        return new VariableDeclarationStatement(declarations.toArray(new VariableDeclaration[0]), tok.row, tok.column);
+        return new VariableDeclarationStatement(
+            declarations.toArray(new VariableDeclaration[declarations.size()]),
+            modifiers.toArray(new Modifier[modifiers.size()]),
+            tok.row, tok.column
+        );
     }
 
     // Utility methods
