@@ -245,7 +245,21 @@ public final class Parser {
                 error("Cannot have variable declaration or function definition in blockless " + (isWhile ? "while" : "if") + " body");
             }
         }
-        return new IfOrWhileStatement(condition, body, isWhile, ifOrWhileToken.row, ifOrWhileToken.column);
+        StatementNode elseBody;
+        if (!isWhile && ReservedToken.matchReservedWord(peek(), "else")) {
+            advance();
+            if (LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect body in else block"), "{")) {
+                elseBody = block(tok);
+            } else {
+                elseBody = statement(tok);
+                if (elseBody instanceof VariableDeclarationStatement || elseBody instanceof FunctionDefinitionStatement) {
+                    error("Cannot have variable declaration or function definition in blockless else body");
+                }
+            }
+        } else {
+            elseBody = null;
+        }
+        return new IfOrWhileStatement(condition, body, elseBody, isWhile, ifOrWhileToken.row, ifOrWhileToken.column);
     }
 
     private StatementList block(Token tok) {

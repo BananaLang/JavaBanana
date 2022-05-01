@@ -51,4 +51,8 @@ public final class ReservedToken extends Token {
     public static boolean matchReservedWord(Token tok, String word) {
         return tok instanceof ReservedToken && ((ReservedToken)tok).word.equals(word);
     }
+
+    public static boolean matchSituationallyReservedWord(Token tok, String word) {
+        return tok instanceof IdentifierToken && ((IdentifierToken)tok).identifier.equals(word);
+    }
 }

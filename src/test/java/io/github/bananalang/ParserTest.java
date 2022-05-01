@@ -11,10 +11,13 @@ import io.github.bananalang.parse.token.Token;
 public class ParserTest {
     public static void main(String[] args) throws IOException {
         List<Token> tokens = new Tokenizer(
-            "def String? join(String? a, String? b) {" +
-                "return (a ?? \"null\").concat(b ?? \"null\");" +
-            "}" +
-            "def String a = \"hello\";"
+            "if (a) {\n" +
+                "println(a);\n" +
+            "} else if (b) {\n" +
+                "println(b);\n" +
+            "} else {\n" +
+                "println(c);\n" +
+            "}\n"
         ).tokenize();
         System.out.println(tokens);
 
