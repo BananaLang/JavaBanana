@@ -5,6 +5,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.bananalang.JavaBananaConstants;
 import io.github.bananalang.parse.token.DecimalToken;
 import io.github.bananalang.parse.token.IdentifierToken;
 import io.github.bananalang.parse.token.IntegerToken;
@@ -41,7 +42,14 @@ public final class Tokenizer {
                 inputLength = result.length();
                 inputReader = null;
             }
+            double startTime = System.nanoTime();
+            if (JavaBananaConstants.DEBUG) {
+                System.out.println("Beginning tokenize of 0x" + Integer.toHexString(System.identityHashCode(input)));
+            }
             tokenize0();
+            if (JavaBananaConstants.DEBUG) {
+                System.out.println("Finished tokenize in " + (System.nanoTime() - startTime) / 1_000_000D + "ms");
+            }
         }
         return tokens;
     }

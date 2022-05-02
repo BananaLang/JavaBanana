@@ -7,6 +7,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import io.github.bananalang.JavaBananaConstants;
 import io.github.bananalang.parse.ast.AccessExpression;
 import io.github.bananalang.parse.ast.AssignmentExpression;
 import io.github.bananalang.parse.ast.BinaryExpression;
@@ -80,7 +81,14 @@ public final class Parser {
                 inputTokens = tokenizer.tokenize();
                 tokenizer = null;
             }
+            double startTime = System.nanoTime();
+            if (JavaBananaConstants.DEBUG) {
+                System.out.println("Beginning parse of 0x" + Integer.toHexString(System.identityHashCode(inputTokens)));
+            }
             parse0();
+            if (JavaBananaConstants.DEBUG) {
+                System.out.println("Finished parse in " + (System.nanoTime() - startTime) / 1_000_000D + "ms");
+            }
         }
         return root;
     }
