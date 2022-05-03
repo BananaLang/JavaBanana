@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.bananalang.JavaBananaConstants;
+import io.github.bananalang.compilecommon.problems.ProblemCollector;
 import io.github.bananalang.parse.token.DecimalToken;
 import io.github.bananalang.parse.token.IdentifierToken;
 import io.github.bananalang.parse.token.IntegerToken;
@@ -14,17 +15,20 @@ import io.github.bananalang.parse.token.StringToken;
 import io.github.bananalang.parse.token.Token;
 
 public final class Tokenizer {
+    private final ProblemCollector problemCollector;
     private Reader inputReader;
     private String input;
     private List<Token> tokens;
     private int row, column;
     private int i, inputLength;
 
-    public Tokenizer(Reader inputReader) {
+    public Tokenizer(Reader inputReader, ProblemCollector problemCollector) {
+        this.problemCollector = problemCollector;
         this.inputReader = inputReader;
     }
 
-    public Tokenizer(String inputString) {
+    public Tokenizer(String inputString, ProblemCollector problemCollector) {
+        this.problemCollector = problemCollector;
         this.inputReader = null;
         this.input = inputString;
         this.inputLength = inputString.length();
@@ -46,10 +50,15 @@ public final class Tokenizer {
             if (JavaBananaConstants.DEBUG) {
                 System.out.println("Beginning tokenize of 0x" + Integer.toHexString(System.identityHashCode(input)));
             }
-            tokenize0();
+            try {
+                tokenize0();
+            } catch (SyntaxException e) {
+                problemCollector.error(e.getMessage(), e.row, e.column);
+            }
             if (JavaBananaConstants.DEBUG) {
                 System.out.println("Finished tokenize in " + (System.nanoTime() - startTime) / 1_000_000D + "ms");
             }
+            problemCollector.throwIfFailing();
         }
         return tokens;
     }
@@ -245,11 +254,6 @@ public final class Tokenizer {
     }
 
     // Utility methods
-    @SuppressWarnings("unused")
-    private void error() {
-        throw new SyntaxException(row, column);
-    }
-
     private void error(String message) {
         throw new SyntaxException(message, row, column);
     }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.github.bananalang.JavaBananaConstants;
+import io.github.bananalang.compilecommon.problems.ProblemCollector;
 import io.github.bananalang.parse.ast.AccessExpression;
 import io.github.bananalang.parse.ast.AssignmentExpression;
 import io.github.bananalang.parse.ast.BinaryExpression;
@@ -50,28 +51,33 @@ public final class Parser {
     private static final String INFERRED_TYPE_MISSING_ASSIGNMENT = "Cannot create variable with inferred type without assignment";
     private static final String EXPECT_EXPRESSION = "Expect expression";
 
+    private final ProblemCollector problemCollector;
     private Tokenizer tokenizer;
     private List<Token> inputTokens;
     private StatementList root;
     private int i;
 
-    public Parser(List<Token> tokens) {
+    public Parser(List<Token> tokens, ProblemCollector problemCollector) {
+        this.problemCollector = problemCollector;
         this.tokenizer = null;
         this.inputTokens = tokens;
     }
 
-    public Parser(Tokenizer tokenizer) {
+    public Parser(Tokenizer tokenizer, ProblemCollector problemCollector) {
+        this.problemCollector = problemCollector;
         this.tokenizer = tokenizer;
         this.inputTokens = null;
     }
 
-    public Parser(Reader inputReader) {
-        this.tokenizer = new Tokenizer(inputReader);
+    public Parser(Reader inputReader, ProblemCollector problemCollector) {
+        this.problemCollector = problemCollector;
+        this.tokenizer = new Tokenizer(inputReader, problemCollector);
         this.inputTokens = null;
     }
 
-    public Parser(String inputString) {
-        this.tokenizer = new Tokenizer(inputString);
+    public Parser(String inputString, ProblemCollector problemCollector) {
+        this.problemCollector = problemCollector;
+        this.tokenizer = new Tokenizer(inputString, problemCollector);
         this.inputTokens = null;
     }
 
@@ -85,10 +91,15 @@ public final class Parser {
             if (JavaBananaConstants.DEBUG) {
                 System.out.println("Beginning parse of 0x" + Integer.toHexString(System.identityHashCode(inputTokens)));
             }
-            parse0();
+            try {
+                parse0();
+            } catch (SyntaxException e) {
+                problemCollector.error(e.getMessage(), e.row, e.column);
+            }
             if (JavaBananaConstants.DEBUG) {
                 System.out.println("Finished parse in " + (System.nanoTime() - startTime) / 1_000_000D + "ms");
             }
+            problemCollector.throwIfFailing();
         }
         return root;
     }
@@ -214,7 +225,7 @@ public final class Parser {
             } else {
                 body = statement(tok);
                 if (body instanceof VariableDeclarationStatement || body instanceof FunctionDefinitionStatement) {
-                    error("Cannot have variable declaration or function definition in blockless for body");
+                    nonCriticalError("Cannot have variable declaration or function definition in blockless for body");
                 }
             }
             return new ThreePartForStatement(initializer, condition, increment, body, tok.row, tok.column);
@@ -231,7 +242,7 @@ public final class Parser {
             } else {
                 body = statement(tok);
                 if (body instanceof VariableDeclarationStatement || body instanceof FunctionDefinitionStatement) {
-                    error("Cannot have variable declaration or function definition in blockless for body");
+                    nonCriticalError("Cannot have variable declaration or function definition in blockless for body");
                 }
             }
             return new IterationForStatement(initializer, iterable, body, tok.row, tok.column);
@@ -253,7 +264,7 @@ public final class Parser {
         } else {
             body = statement(tok);
             if (body instanceof VariableDeclarationStatement || body instanceof FunctionDefinitionStatement) {
-                error("Cannot have variable declaration or function definition in blockless " + (isWhile ? "while" : "if") + " body");
+                nonCriticalError("Cannot have variable declaration or function definition in blockless " + (isWhile ? "while" : "if") + " body");
             }
         }
         StatementNode elseBody;
@@ -264,7 +275,7 @@ public final class Parser {
             } else {
                 elseBody = statement(tok);
                 if (elseBody instanceof VariableDeclarationStatement || elseBody instanceof FunctionDefinitionStatement) {
-                    error("Cannot have variable declaration or function definition in blockless else body");
+                    nonCriticalError("Cannot have variable declaration or function definition in blockless else body");
                 }
             }
         } else {
@@ -623,7 +634,7 @@ public final class Parser {
                 tok = nextOrError(IMPORT_STATEMENT);
                 if (LiteralToken.matchLiteral(tok, ";")) {
                     if (module.length() == 0) {
-                        error("Expected . after identifier in import, but import statement ended");
+                        nonCriticalError("Expected . after identifier in import, but import statement ended");
                     }
                     module.setLength(module.length() - 1); // Remove trailing /
                     break;
@@ -633,7 +644,7 @@ public final class Parser {
                 }
             } else if (LiteralToken.matchLiteral(tok, "*")) {
                 if (last == null) {
-                    error("Cannot import * by itself");
+                    nonCriticalError("Cannot import * by itself");
                 }
                 module.append(last);
                 last = "*";
@@ -668,12 +679,9 @@ public final class Parser {
             if (incompatibleWith != null) {
                 if (incompatibleWith == modifier) {
                     // Duplicate modifier!
-                    throw new SyntaxException(
-                        "Duplicate modifier: " + modifier,
-                        tok.row, tok.column
-                    );
+                    problemCollector.error("Duplicate modifier: " + modifier, tok.row, tok.column);
                 } else {
-                    throw new SyntaxException(
+                    problemCollector.error(
                         "Incompatible modifiers: " + modifier + " and " + incompatibleWith,
                         tok.row, tok.column
                     );
@@ -744,12 +752,12 @@ public final class Parser {
                     }
                     if (LiteralToken.matchLiteral(tok, ",")) {
                         if (argType == null && defaultValue == null) {
-                            error(INFERRED_TYPE_MISSING_ASSIGNMENT);
+                            nonCriticalError(INFERRED_TYPE_MISSING_ASSIGNMENT);
                         }
                         continue;
                     } else if (LiteralToken.matchLiteral(tok, ")")) {
                         if (argType == null && defaultValue == null) {
-                            error(INFERRED_TYPE_MISSING_ASSIGNMENT);
+                            nonCriticalError(INFERRED_TYPE_MISSING_ASSIGNMENT);
                         }
                         break;
                     } else {
@@ -789,13 +797,13 @@ public final class Parser {
             }
             if (LiteralToken.matchLiteral(tok, ",")) {
                 if (type == null && value == null) {
-                    error(INFERRED_TYPE_MISSING_ASSIGNMENT);
+                    nonCriticalError(INFERRED_TYPE_MISSING_ASSIGNMENT);
                 }
                 canBeFunction = false;
                 continue;
             } else if (LiteralToken.matchLiteral(tok, ";") || (isInFor && LiteralToken.matchLiteral(tok, ":"))) {
                 if (!isInFor && type == null && value == null) {
-                    error(INFERRED_TYPE_MISSING_ASSIGNMENT);
+                    nonCriticalError(INFERRED_TYPE_MISSING_ASSIGNMENT);
                 }
                 if (isInFor) i--;
                 break;
@@ -820,13 +828,12 @@ public final class Parser {
         error("Unexpected token " + (where == null ? "" : (where + " ")) + tok);
     }
 
-    @SuppressWarnings("unused")
-    private void error() {
-        throw new SyntaxException(last().row, last().column);
-    }
-
     private void error(String message) {
         throw new SyntaxException(message, last().row, last().column);
+    }
+
+    private void nonCriticalError(String message) {
+        problemCollector.error(message, last().row, last().column);
     }
 
     private boolean hasNext() {
