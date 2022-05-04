@@ -13,6 +13,7 @@ import io.github.bananalang.parse.ast.AccessExpression;
 import io.github.bananalang.parse.ast.AssignmentExpression;
 import io.github.bananalang.parse.ast.BinaryExpression;
 import io.github.bananalang.parse.ast.BinaryExpression.BinaryOperator;
+import io.github.bananalang.parse.ast.ReservedIdentifierExpression.ReservedIdentifier;
 import io.github.bananalang.parse.ast.BooleanExpression;
 import io.github.bananalang.parse.ast.CallExpression;
 import io.github.bananalang.parse.ast.DecimalExpression;
@@ -24,7 +25,7 @@ import io.github.bananalang.parse.ast.IfOrWhileStatement;
 import io.github.bananalang.parse.ast.ImportStatement;
 import io.github.bananalang.parse.ast.IntegerExpression;
 import io.github.bananalang.parse.ast.IterationForStatement;
-import io.github.bananalang.parse.ast.NullExpression;
+import io.github.bananalang.parse.ast.ReservedIdentifierExpression;
 import io.github.bananalang.parse.ast.ReturnStatement;
 import io.github.bananalang.parse.ast.StatementList;
 import io.github.bananalang.parse.ast.StatementNode;
@@ -607,7 +608,9 @@ public final class Parser {
         } else if (ReservedToken.matchReservedWord(tok, ReservedToken.FALSE)) {
             return new BooleanExpression(false, tok.row, tok.column);
         } else if (ReservedToken.matchReservedWord(tok, ReservedToken.NULL)) {
-            return new NullExpression(tok.row, tok.column);
+            return new ReservedIdentifierExpression(ReservedIdentifier.NULL, tok.row, tok.column);
+        } else if (ReservedToken.matchReservedWord(tok, ReservedToken.THIS)) {
+            return new ReservedIdentifierExpression(ReservedIdentifier.THIS, tok.row, tok.column);
         } else if (LiteralToken.matchLiteral(tok, "(")) {
             ExpressionNode result = expression();
             if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expected ) after paranthesized expression"), ")")) {
@@ -727,20 +730,29 @@ public final class Parser {
                     }
                     tok = nextOrError(VARIABLE_DECLARATION);
                     boolean nullableArg = false;
-                    if (LiteralToken.matchLiteral(tok, "?")) {
-                        nullableArg = true;
-                        tok = nextOrError(VARIABLE_DECLARATION);
-                    }
-                    if (!(tok instanceof IdentifierToken)) {
-                        error("Expected variable name in variable declaration, not " + tok);
-                    }
-                    String argName = ((IdentifierToken)tok).identifier;
+                    String argName;
                     ExpressionNode defaultValue;
-                    tok = nextOrError(VARIABLE_DECLARATION);
-                    if (LiteralToken.matchLiteral(tok, "=")) {
-                        defaultValue = expression();
-                        tok = nextOrErrorMessage("Expected ) or , after variable declaration");
+                    if (declarations.size() >= 1 || !modifiers.contains(Modifier.EXTENSION)) {
+                        if (LiteralToken.matchLiteral(tok, "?")) {
+                            nullableArg = true;
+                            tok = nextOrError(VARIABLE_DECLARATION);
+                        }
+                        if (!(tok instanceof IdentifierToken)) {
+                            error("Expected variable name in variable declaration, not " + tok);
+                        }
+                        argName = ((IdentifierToken)tok).identifier;
+                        tok = nextOrError(VARIABLE_DECLARATION);
+                        if (LiteralToken.matchLiteral(tok, "=")) {
+                            defaultValue = expression();
+                            tok = nextOrErrorMessage("Expected ) or , after variable declaration");
+                        } else {
+                            defaultValue = null;
+                        }
                     } else {
+                        if (argType == null) {
+                            nonCriticalError("The type for an extension method cannot be var");
+                        }
+                        argName = null;
                         defaultValue = null;
                     }
                     if (argType != null || defaultValue != null) { // Otherwise we error a few lines down
@@ -761,12 +773,15 @@ public final class Parser {
                         }
                         break;
                     } else {
-                        error("Expected ) or , after variable declaration, not " + tok);
+                        error("Expected ) or , after parameter declaration, not " + tok);
                     }
                     declarations.add(new VariableDeclaration(
                         argType != null ? new TypeReference(argType, nullableArg) : null,
                         argName
                     )); // reuse existing list
+                }
+                if (modifiers.contains(Modifier.EXTENSION) && declarations.size() < 1) {
+                    nonCriticalError("extension methods must declare a type to extend");
                 }
                 if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expect { after function header"), "{")) {
                     error("Expected { after function header, not " + tok);

@@ -3,7 +3,6 @@ package io.github.bananalang.parse.ast;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import io.github.bananalang.parse.SyntaxException;
@@ -128,7 +127,7 @@ public final class VariableDeclarationStatement extends StatementNode {
     public static final class VariableDeclaration {
         /** The declared type, as a string, or {@code null} to indicate type inference. */
         public final TypeReference type;
-        /** The variable name. */
+        /** The variable name, or {@code null} if this is the {@code this} argument of an extension method */
         public final String name;
         /** The value expression, or null if not assigned to. */
         public final ExpressionNode value;
@@ -143,23 +142,20 @@ public final class VariableDeclarationStatement extends StatementNode {
 
         public VariableDeclaration(TypeReference type, String name, ExpressionNode value) {
             this.type = type;
-            this.name = Objects.requireNonNull(name);
+            this.name = name;
             this.value = value;
         }
 
         @Override
         public String toString() {
-            StringBuilder result = new StringBuilder(type == null ? "var" : type.toString())
-                .append(' ')
-                .append(name);
+            StringBuilder result = new StringBuilder(type == null ? "var" : type.toString());
+            if (name != null) {
+                result.append(' ')
+                    .append(name);
+            }
             if (value != null) {
-                result.append(" = ");
-                String valueStr = value.toString();
-                if (valueStr.startsWith("(") && valueStr.endsWith(")")) {
-                    result.append(valueStr, 1, valueStr.length() - 1);
-                } else {
-                    result.append(valueStr);
-                }
+                result.append(" = ")
+                    .append(value);
             }
             return result.toString();
         }

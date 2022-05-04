@@ -92,9 +92,15 @@ public final class ProblemCollector {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder()
-            .append(notices).append(" notices, ")
-            .append(warnings).append(" warnings, ")
-            .append(errors).append(" errors\n");
+            .append(notices)
+            .append(" notice").append(notices != 1 ? "s" : "")
+            .append(", ")
+            .append(warnings)
+            .append(" warning").append(warnings != 1 ? "s" : "")
+            .append(", ")
+            .append(errors)
+            .append(" error").append(errors != 1 ? "s" : "")
+            .append("\n");
         for (Problem problem : problems) {
             result.append("\n").append(problem);
         }
@@ -103,9 +109,15 @@ public final class ProblemCollector {
 
     public String ansiFormattedString() {
         StringBuilder result = new StringBuilder("\u001b[1m")
-            .append(notices).append(" notices, \u001b[33m")
-            .append(warnings).append(" warnings, \u001b[31m")
-            .append(errors).append(" errors \u001b[0m\n");
+            .append(notices)
+            .append(" notice").append(notices != 1 ? "s" : "")
+            .append(", \u001b[33m")
+            .append(warnings)
+            .append(" warning").append(warnings != 1 ? "s" : "")
+            .append(", \u001b[31m")
+            .append(errors)
+            .append(" error").append(errors != 1 ? "s" : "")
+            .append("\u001b[0m\n");
         for (Problem problem : problems) {
             result.append("\n\u001b[1m");
             switch (problem.getLevel()) {
