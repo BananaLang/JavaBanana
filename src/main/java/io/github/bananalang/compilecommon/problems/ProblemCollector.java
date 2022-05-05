@@ -83,6 +83,10 @@ public final class ProblemCollector {
         return errors > 0;
     }
 
+    public boolean hasOutput() {
+        return notices > 0 || warnings > 0 || errors > 0;
+    }
+
     public void throwIfFailing() {
         if (isFailing()) {
             throw new GenericCompilationFailureException(this);
