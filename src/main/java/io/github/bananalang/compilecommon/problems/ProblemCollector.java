@@ -135,16 +135,15 @@ public final class ProblemCollector {
                     result.append("\u001b[31merror");
                     break;
             }
-            result.append(":\u001b[0m ")
-                .append(problem.getMessage());
             if (problem.getRow() > 0) {
-                result.append(" at \u001b[1m[line ")
+                result.append(" \u001b[0;1m(line ")
                     .append(problem.getRow())
                     .append(", column ")
                     .append(problem.getColumn())
-                    .append(']')
-                    .append("\u001b[0m");
+                    .append(')');
             }
+            result.append(":\u001b[0m ")
+                .append(problem.getMessage());
         }
         return result.toString();
     }

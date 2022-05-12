@@ -64,16 +64,17 @@ public final class Problem {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder(level.toString().toLowerCase())
-            .append(": ")
-            .append(message);
+        StringBuilder result = new StringBuilder(level.toString().toLowerCase());
         if (row > 0) {
-            result.append(" at [line ")
+            result.append(" (line ")
                 .append(row)
                 .append(", column ")
                 .append(column)
-                .append(']');
+                .append(')');
         }
-        return result.toString();
+        return result
+            .append(": ")
+            .append(message)
+            .toString();
     }
 }
