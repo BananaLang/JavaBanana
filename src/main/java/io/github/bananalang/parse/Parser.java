@@ -26,6 +26,7 @@ import io.github.bananalang.parse.ast.IfOrWhileStatement;
 import io.github.bananalang.parse.ast.ImportStatement;
 import io.github.bananalang.parse.ast.IntegerExpression;
 import io.github.bananalang.parse.ast.IterationForStatement;
+import io.github.bananalang.parse.ast.LambdaExpression;
 import io.github.bananalang.parse.ast.ReservedIdentifierExpression;
 import io.github.bananalang.parse.ast.ReturnStatement;
 import io.github.bananalang.parse.ast.StatementList;
@@ -119,6 +120,10 @@ public final class Parser {
     }
 
     private StatementNode statement(Token tok) {
+        return statement(tok, false);
+    }
+
+    private StatementNode statement(Token tok, boolean noSemiAfterExpressionStatement) {
         if (ReservedToken.matchReservedWord(tok, ReservedToken.DEF)) {
             return variableDeclaration(false);
         } else if (ReservedToken.matchReservedWord(tok, ReservedToken.IF)) {
@@ -133,7 +138,10 @@ public final class Parser {
             return block(tok);
         } else {
             ExpressionStatement result = new ExpressionStatement(expression(tok));
-            if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expected ; after expression statement"), ";")) {
+            if (
+                !noSemiAfterExpressionStatement &&
+                !LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expected ; after expression statement"), ";")
+            ) {
                 error("Expected ; after expression statement, not " + tok);
             }
             return result;
@@ -632,6 +640,59 @@ public final class Parser {
             return new ReservedIdentifierExpression(ReservedIdentifier.NULL, tok.row, tok.column);
         } else if (ReservedToken.matchReservedWord(tok, ReservedToken.THIS)) {
             return new ReservedIdentifierExpression(ReservedIdentifier.THIS, tok.row, tok.column);
+        } else if (LiteralToken.matchLiteral(tok, "{")) {
+            Token beginTok = tok;
+            List<VariableDeclaration> args = new ArrayList<>();
+            if (LiteralToken.matchLiteral(peek(), "->")) {
+                advance();
+            } else {
+                int i = 0;
+                for (; (tok = peek()) instanceof IdentifierToken; i++) {
+                    advance();
+                    TypeReference type = null;
+                    if (LiteralToken.matchLiteral(peek(), ":")) {
+                        advance();
+                        Token tok2 = nextOrError("lambda type");
+                        String typeName;
+                        if (!(tok2 instanceof IdentifierToken)) {
+                            error("Lambda argument type name expected");
+                            return null; // UNREACHABLE
+                        }
+                        typeName = ((IdentifierToken)tok2).identifier;
+                        boolean nullable = LiteralToken.matchLiteral(peek(), "?");
+                        if (nullable) {
+                            advance();
+                        }
+                        type = new TypeReference(typeName, nullable);
+                    }
+                    if (LiteralToken.matchLiteral(peek(), "->")) {
+                        advance();
+                        args.add(new VariableDeclaration(type, ((IdentifierToken)tok).identifier));
+                        break;
+                    } else if (LiteralToken.matchLiteral(peek(), ",")) {
+                        advance();
+                        args.add(new VariableDeclaration(type, ((IdentifierToken)tok).identifier));
+                        peek();
+                    } else {
+                        if (i > 0) {
+                            throw new SyntaxException("Identifier in a weird spot", tok.row, tok.column);
+                        }
+                        previous();
+                        break;
+                    }
+                }
+            }
+            StatementList body = new StatementList(beginTok.row, beginTok.column);
+            while (!LiteralToken.matchLiteral(tok = nextOrError("lambda"), "}")) {
+                StatementNode stmt = statement(tok, body.children.size() == 0);
+                if (body.children.size() == 0 && stmt instanceof ExpressionStatement) {
+                    if (LiteralToken.matchLiteral(peek(), ";")) {
+                        advance();
+                    }
+                }
+                body.children.add(stmt);
+            }
+            return new LambdaExpression(args.toArray(new VariableDeclaration[args.size()]), body);
         } else if (LiteralToken.matchLiteral(tok, "(")) {
             ExpressionNode result = expression();
             if (!LiteralToken.matchLiteral(tok = nextOrErrorMessage("Expected ) after paranthesized expression"), ")")) {
@@ -841,7 +902,7 @@ public final class Parser {
                 if (!isInFor && type == null && value == null) {
                     nonCriticalError(INFERRED_TYPE_MISSING_ASSIGNMENT);
                 }
-                if (isInFor) i--;
+                if (isInFor) previous();
                 break;
             } else {
                 error("Expected ; or , after variable declaration, not " + tok);

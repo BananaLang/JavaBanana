@@ -20,7 +20,7 @@ public final class StringToken extends Token {
 
     @Override
     public String toString() {
-        return escape(value);
+        return "\"" + escape(value) + '"';
     }
 
     public static String escape(String value) {

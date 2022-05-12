@@ -120,6 +120,16 @@ public final class Tokenizer {
                     continue;
                 case '+':
                 case '-':
+                    if (advanceIfEqual('=')) {
+                        tokens.add(new LiteralToken("-=", row, column));
+                    } else if (advanceIfEqual(c)) {
+                        tokens.add(new LiteralToken("--", row, column));
+                    } else if (advanceIfEqual('>')) {
+                        tokens.add(new LiteralToken("->", row, column));
+                    } else {
+                        tokens.add(new LiteralToken("-", row, column));
+                    }
+                    continue;
                 case '&':
                 case '|':
                     if (advanceIfEqual('=')) {

@@ -18,7 +18,7 @@ public final class CastExpression extends ExpressionNode {
 
     @Override
     protected void dump(StringBuilder output, int currentIndent, int indent) {
-        output.append("UnaryExpression{\n")
+        output.append("CastExpression{\n")
               .append(getIndent(currentIndent + indent))
               .append("target=");
         target.dump(output, currentIndent + indent, indent);
