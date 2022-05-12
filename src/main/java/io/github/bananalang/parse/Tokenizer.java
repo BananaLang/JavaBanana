@@ -141,6 +141,8 @@ public final class Tokenizer {
                         } else {
                             tokens.add(new LiteralToken(new String(new char[] {c, '='}), row, column));
                         }
+                    } else if (advanceIfEqual('!')) {
+                        tokens.add(new LiteralToken("!!", row, column));
                     } else {
                         tokens.add(new LiteralToken(String.valueOf(c), row, column));
                     }

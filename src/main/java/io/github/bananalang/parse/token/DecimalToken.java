@@ -16,8 +16,6 @@ public final class DecimalToken extends Token {
 
     @Override
     public String toString() {
-        return string()
-               .add("value", value)
-               .toString();
+        return Double.toString(value);
     }
 }

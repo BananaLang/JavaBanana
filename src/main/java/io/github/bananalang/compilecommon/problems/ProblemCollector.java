@@ -138,9 +138,9 @@ public final class ProblemCollector {
             result.append(":\u001b[0m ")
                 .append(problem.getMessage());
             if (problem.getRow() > 0) {
-                result.append(" at \u001b[1m[")
+                result.append(" at \u001b[1m[line ")
                     .append(problem.getRow())
-                    .append(',')
+                    .append(", column ")
                     .append(problem.getColumn())
                     .append(']')
                     .append("\u001b[0m");

@@ -43,9 +43,7 @@ public final class ReservedToken extends Token {
 
     @Override
     public String toString() {
-        return string()
-               .add("word", word)
-               .toString();
+        return word;
     }
 
     public static boolean matchReservedWord(Token tok, String word) {

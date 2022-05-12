@@ -16,6 +16,7 @@ import io.github.bananalang.parse.ast.BinaryExpression.BinaryOperator;
 import io.github.bananalang.parse.ast.ReservedIdentifierExpression.ReservedIdentifier;
 import io.github.bananalang.parse.ast.BooleanExpression;
 import io.github.bananalang.parse.ast.CallExpression;
+import io.github.bananalang.parse.ast.CastExpression;
 import io.github.bananalang.parse.ast.DecimalExpression;
 import io.github.bananalang.parse.ast.ExpressionNode;
 import io.github.bananalang.parse.ast.ExpressionStatement;
@@ -482,7 +483,7 @@ public final class Parser {
     }
 
     private ExpressionNode multiplication(Token tok) {
-        ExpressionNode left = unary(tok);
+        ExpressionNode left = castOrNew(tok);
         Token rightToken = peek();
         while (rightToken instanceof LiteralToken) {
             BinaryOperator op;
@@ -500,11 +501,31 @@ public final class Parser {
                     return left;
             }
             advance();
-            ExpressionNode right = unary(expectExpression());
+            ExpressionNode right = castOrNew(expectExpression());
             left = new BinaryExpression(left, right, op, tok.row, tok.column);
             rightToken = peek();
         }
         return left;
+    }
+
+    private ExpressionNode castOrNew(Token tok) {
+        if (LiteralToken.matchLiteral(tok, "(")) {
+            if (peek() instanceof IdentifierToken) {
+                advance();
+                if (LiteralToken.matchLiteral(peek(), "?")) {
+                    TypeReference type = new TypeReference(((IdentifierToken)last()).identifier, true);
+                    advance(2);
+                    return new CastExpression(castOrNew(expectExpression()), type, tok.row, tok.column);
+                } else if (LiteralToken.matchLiteral(peek(), ")")) {
+                    TypeReference type = new TypeReference(((IdentifierToken)last()).identifier, false);
+                    advance();
+                    return new CastExpression(castOrNew(expectExpression()), type, tok.row, tok.column);
+                } else {
+                    previous();
+                }
+            }
+        }
+        return unary(tok);
     }
 
     private ExpressionNode unary(Token tok) {
@@ -892,6 +913,13 @@ public final class Parser {
         return c;
     }
 
+    private Token previous() {
+        if (i > 0) {
+            return inputTokens.get(--i);
+        }
+        return null;
+    }
+
     private Token next() {
         if (i < inputTokens.size()) {
             return inputTokens.get(i++);
@@ -904,6 +932,17 @@ public final class Parser {
             i++;
         }
         return i - 1;
+    }
+
+    private int advance(int n) {
+        if (i + n <= inputTokens.size()) {
+            i += n;
+            return i - n;
+        } else {
+            int oldI = i;
+            i = inputTokens.size();
+            return oldI;
+        }
     }
 
     private Token safeTokenAt(int i) {

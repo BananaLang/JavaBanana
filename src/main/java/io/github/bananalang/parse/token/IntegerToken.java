@@ -18,8 +18,6 @@ public final class IntegerToken extends Token {
 
     @Override
     public String toString() {
-        return string()
-               .add("value", value)
-               .toString();
+        return value.toString();
     }
 }

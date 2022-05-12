@@ -16,9 +16,7 @@ public final class LiteralToken extends Token {
 
     @Override
     public String toString() {
-        return string()
-               .add("literal", literal)
-               .toString();
+        return literal;
     }
 
     public static boolean matchLiteral(Token tok, String check) {

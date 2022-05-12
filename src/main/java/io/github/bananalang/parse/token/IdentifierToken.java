@@ -16,9 +16,7 @@ public final class IdentifierToken extends Token {
 
     @Override
     public String toString() {
-        return string()
-               .add("identifier", identifier)
-               .toString();
+        return identifier;
     }
 
     public static Token identifierOrReserved(String identifier, int row, int column) {

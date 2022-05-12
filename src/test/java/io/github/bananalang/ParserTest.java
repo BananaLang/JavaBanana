@@ -14,11 +14,7 @@ public class ParserTest {
     public static void main(String[] args) throws IOException {
         ProblemCollector problemCollector = new ProblemCollector();
         List<Token> tokens = new Tokenizer(
-            "def extension var echo(String) {\n" +
-                "println(this);\n" +
-            "}\n" +
-            "def var hello = \"Hello world!\";\n" +
-            "hello.echo();\n",
+            "println((String?)(Object)\"hello\");\n",
             problemCollector
         ).tokenize();
         System.out.println(tokens);

@@ -68,9 +68,9 @@ public final class Problem {
             .append(": ")
             .append(message);
         if (row > 0) {
-            result.append(" at [")
+            result.append(" at [line ")
                 .append(row)
-                .append(',')
+                .append(", column ")
                 .append(column)
                 .append(']');
         }
