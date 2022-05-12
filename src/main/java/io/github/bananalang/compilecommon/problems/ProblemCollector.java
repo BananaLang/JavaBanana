@@ -21,7 +21,7 @@ public final class ProblemCollector {
                 notices++;
                 break;
             case WARNING:
-                notices++;
+                warnings++;
                 break;
             case ERROR:
                 errors++;
