@@ -14,9 +14,11 @@ public class ParserTest {
     public static void main(String[] args) throws IOException {
         ProblemCollector problemCollector = new ProblemCollector();
         List<Token> tokens = new Tokenizer(
-            "def Supplier supp = {sd \"hello\" };\n" +
-            "def Function func = { obj: Object? -> \"hello, \".add(obj) };\n" +
-            "def BiFunction func2 = { obj1: Object, obj2: Object? -> \"hello, \".add(obj).add(\" and \").add(obj2) };\n",
+            "import io.github.bananalang.TypeTest.TEST_SUPPLIER;\n" +
+            "import io.github.bananalang.TypeTest.REVERSER;\n" +
+            "def var testVar = (String?)TEST_SUPPLIER!!();\n" +
+            "println(testVar);\n" +
+            "println((String)REVERSER(testVar)!!);\n",
             problemCollector
         ).tokenize();
         System.out.println(tokens);

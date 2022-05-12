@@ -533,10 +533,10 @@ public final class Parser {
                 }
             }
         }
-        return unary(tok);
+        return prefix(tok);
     }
 
-    private ExpressionNode unary(Token tok) {
+    private ExpressionNode prefix(Token tok) {
         if (tok instanceof LiteralToken) {
             UnaryOperator op;
             switch (((LiteralToken)tok).literal) {
@@ -562,7 +562,7 @@ public final class Parser {
                     op = null;
             }
             if (op != null) {
-                return new UnaryExpression(unary(expectExpression()), op, tok.row, tok.column);
+                return new UnaryExpression(prefix(expectExpression()), op, tok.row, tok.column);
             }
         }
         return call(tok);
@@ -595,6 +595,11 @@ public final class Parser {
                         }
                     }
                     target = new CallExpression(target, args.toArray(new ExpressionNode[0]), target.row, target.column);
+                    continue;
+                }
+                case "!!": {
+                    advance();
+                    target = new UnaryExpression(target, UnaryOperator.ASSERT_NONNULL, target.row, target.column);
                     continue;
                 }
                 case ".": {

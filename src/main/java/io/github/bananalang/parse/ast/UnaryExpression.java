@@ -2,6 +2,8 @@ package io.github.bananalang.parse.ast;
 
 public final class UnaryExpression extends ExpressionNode {
     public static enum UnaryOperator {
+        ASSERT_NONNULL("", "!!"),
+        POST_INCREMENT("", "++"), POST_DECREMENT("", "--"),
         PRE_INCREMENT("++", ""), PRE_DECREMENT("--", ""),
         PLUS("+", ""), NEGATE("-", ""), NOT("!", ""), BITWISE_INVERT("~", "");
 
@@ -51,6 +53,9 @@ public final class UnaryExpression extends ExpressionNode {
 
     @Override
     public String toString() {
+        if (type == UnaryOperator.ASSERT_NONNULL) {
+            return "" + value + "!!";
+        }
         return "(" + type.getPre() + value + type.getPost() + ')';
     }
 }
