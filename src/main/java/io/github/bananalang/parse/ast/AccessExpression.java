@@ -37,6 +37,9 @@ public final class AccessExpression extends ExpressionNode {
 
     @Override
     public String toString() {
+        if (target instanceof IntegerExpression && !safeNavigation) {
+            return target + " ." + name; // Corner case
+        }
         return target + (safeNavigation ? "?." : ".") + name;
     }
 }

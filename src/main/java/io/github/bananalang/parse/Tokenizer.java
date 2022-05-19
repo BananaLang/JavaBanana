@@ -118,7 +118,6 @@ public final class Tokenizer {
                         tokens.add(new LiteralToken("?", row, column));
                     }
                     continue;
-                case '+':
                 case '-':
                     if (advanceIfEqual('=')) {
                         tokens.add(new LiteralToken("-=", row, column));
@@ -130,6 +129,7 @@ public final class Tokenizer {
                         tokens.add(new LiteralToken("-", row, column));
                     }
                     continue;
+                case '+':
                 case '&':
                 case '|':
                     if (advanceIfEqual('=')) {
